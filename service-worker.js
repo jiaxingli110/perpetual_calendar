@@ -1,4 +1,4 @@
-const CACHE_NAME = "perpetual-calendar-v6";
+const CACHE_NAME = "perpetual-calendar-v13";
 const ASSETS = [
   "./",
   "./index.html",

@@ -133,8 +133,80 @@ const monthlyRecommendations = {
   "12-mid": ["12月中旬", ["柚子", "猕猴桃", "冬枣"], ["冬笋", "芹菜", "菠菜"], ["海参", "扇贝", "黄鱼"]],
   "12-late": ["12月下旬", ["车厘子", "橙子", "苹果"], ["山药", "莲藕", "菜心"], ["牡蛎", "鲈鱼", "蛤蜊"]]
 };
+const historyToday = {
+  "01-01": [
+    ["1863", "林肯签署《解放奴隶宣言》正式生效。", "The Emancipation Proclamation took effect in the United States."],
+    ["1999", "欧元作为电子货币正式启动。", "The euro was launched as an electronic currency."]
+  ],
+  "02-14": [
+    ["1876", "贝尔申请电话专利。", "Alexander Graham Bell applied for a telephone patent."],
+    ["1946", "世界上早期电子计算机 ENIAC 公开亮相。", "ENIAC, an early electronic computer, was publicly unveiled."]
+  ],
+  "03-08": [
+    ["1910", "国际妇女节倡议在哥本哈根会议上提出。", "The idea of International Women's Day was proposed in Copenhagen."],
+    ["1975", "联合国开始纪念国际妇女节。", "The United Nations began observing International Women's Day."]
+  ],
+  "04-05": [
+    ["1904", "中国近代实业家张謇创办的事业进入快速发展阶段。", "Zhang Jian's modern industrial and educational efforts entered a period of growth."],
+    ["1975", "蒋介石在台北逝世。", "Chiang Kai-shek died in Taipei."]
+  ],
+  "05-01": [
+    ["1886", "美国芝加哥工人大罢工，后来成为国际劳动节的重要源流。", "The Chicago workers' strike became a key origin of International Workers' Day."],
+    ["1950", "《中华人民共和国婚姻法》公布施行。", "China's Marriage Law was promulgated and took effect."]
+  ],
+  "05-04": [
+    ["1919", "五四运动爆发。", "The May Fourth Movement began in China."],
+    ["1959", "第一届格莱美奖举行。", "The first Grammy Awards ceremony was held."]
+  ],
+  "05-29": [
+    ["1953", "人类首次登顶珠穆朗玛峰。", "Humans reached the summit of Mount Everest for the first time."],
+    ["1919", "爱丁顿日食观测支持广义相对论。", "Eddington's eclipse observations supported general relativity."]
+  ],
+  "06-01": [
+    ["1926", "玛丽莲·梦露出生。", "Marilyn Monroe was born."],
+    ["1980", "美国有线电视新闻网 CNN 开播。", "CNN began broadcasting in the United States."]
+  ],
+  "07-01": [
+    ["1921", "中国共产党成立相关会议在上海召开。", "Meetings associated with the founding of the Communist Party of China began in Shanghai."],
+    ["1997", "香港回归中国。", "Hong Kong returned to China."]
+  ],
+  "08-01": [
+    ["1927", "南昌起义爆发。", "The Nanchang Uprising began."],
+    ["1981", "音乐电视台 MTV 开播。", "MTV began broadcasting."]
+  ],
+  "09-10": [
+    ["1985", "中国第一个教师节。", "China observed its first Teachers' Day."],
+    ["1960", "欧佩克成立。", "OPEC was founded."]
+  ],
+  "10-01": [
+    ["1949", "中华人民共和国成立。", "The People's Republic of China was founded."],
+    ["1958", "美国国家航空航天局 NASA 正式运行。", "NASA officially began operations."]
+  ],
+  "11-11": [
+    ["1918", "第一次世界大战停战协定生效。", "The Armistice ending fighting in World War I took effect."],
+    ["1992", "英格兰国教会投票允许女性担任牧师。", "The Church of England voted to allow women to become priests."]
+  ],
+  "12-25": [
+    ["1642", "艾萨克·牛顿出生。", "Isaac Newton was born."],
+    ["1991", "苏联总统戈尔巴乔夫宣布辞职。", "Mikhail Gorbachev resigned as president of the Soviet Union."]
+  ]
+};
 const defaultSettings = {
-  showJapanHolidays: false
+  showJapanHolidays: false,
+  components: {
+    today: true,
+    events: true,
+    redDays: true,
+    recommendations: true,
+    todos: true
+  },
+  collapsed: {
+    today: false,
+    events: false,
+    redDays: false,
+    recommendations: false,
+    todos: false
+  }
 };
 
 const state = {
@@ -159,7 +231,16 @@ const elements = {
   ganzhiDetail: document.querySelector("#ganzhiDetail"),
   festivalDetail: document.querySelector("#festivalDetail"),
   monthEvents: document.querySelector("#monthEvents"),
+  historyList: document.querySelector("#historyList"),
+  settingsButton: document.querySelector("#settingsButton"),
+  settingsPopover: document.querySelector("#settingsPopover"),
+  settingsClose: document.querySelector("#settingsClose"),
+  settingsPageButtons: document.querySelectorAll("[data-settings-page]"),
+  settingsPanels: document.querySelectorAll("[data-settings-panel]"),
   japanHolidayToggle: document.querySelector("#japanHolidayToggle"),
+  componentToggles: document.querySelectorAll("[data-component-toggle]"),
+  componentSections: document.querySelectorAll("[data-component]"),
+  collapseToggles: document.querySelectorAll("[data-collapse-toggle]"),
   seasonRecommendations: document.querySelector("#seasonRecommendations"),
   todoForm: document.querySelector("#todoForm"),
   todoText: document.querySelector("#todoText"),
@@ -194,7 +275,13 @@ function monthKey(month, day) {
 
 function loadSettings() {
   try {
-    return { ...defaultSettings, ...JSON.parse(localStorage.getItem("calendarSettings") || "{}") };
+    const saved = JSON.parse(localStorage.getItem("calendarSettings") || "{}");
+    return {
+      ...defaultSettings,
+      ...saved,
+      components: { ...defaultSettings.components, ...(saved.components || {}) },
+      collapsed: { ...defaultSettings.collapsed, ...(saved.collapsed || {}) }
+    };
   } catch {
     return { ...defaultSettings };
   }
@@ -564,6 +651,40 @@ function renderMonthEvents() {
   }
 }
 
+function getHistoryItems(date) {
+  const key = monthKey(date.getMonth() + 1, date.getDate());
+  return historyToday[key] || [
+    ["今日", "这一天也值得被记录。", "This date is still worth remembering."],
+    ["Today", "选择一个特别年份，给这一天添上一条属于你的记录。", "Pick a meaningful year and add your own memory for this date."]
+  ];
+}
+
+function renderHistory() {
+  elements.historyList.replaceChildren();
+  for (const [year, zh, en] of getHistoryItems(state.selected)) {
+    const item = document.createElement("li");
+    item.innerHTML = `<strong>${year}</strong><span>${zh}</span><small>${en}</small>`;
+    elements.historyList.append(item);
+  }
+}
+
+function applyComponentSettings() {
+  for (const toggle of elements.componentToggles) {
+    const key = toggle.dataset.componentToggle;
+    toggle.checked = state.settings.components[key] !== false;
+  }
+
+  for (const section of elements.componentSections) {
+    const key = section.dataset.component;
+    const visible = state.settings.components[key] !== false;
+    const collapsed = state.settings.collapsed[key] === true;
+    section.hidden = !visible;
+    section.classList.toggle("is-collapsed", collapsed);
+    const button = section.querySelector("[data-collapse-toggle]");
+    if (button) button.setAttribute("aria-expanded", String(!collapsed));
+  }
+}
+
 function renderSeasonRecommendations() {
   const month = state.selected.getMonth() + 1;
   const period = getPeriodKey(state.selected.getDate());
@@ -654,6 +775,8 @@ function render() {
   renderMonthEvents();
   renderSeasonRecommendations();
   renderTodos();
+  renderHistory();
+  applyComponentSettings();
   elements.japanHolidayToggle.checked = state.settings.showJapanHolidays;
 }
 
@@ -669,6 +792,38 @@ elements.japanHolidayToggle.addEventListener("change", (event) => {
   saveSettings();
   render();
 });
+elements.settingsButton.addEventListener("click", () => {
+  elements.settingsPopover.hidden = !elements.settingsPopover.hidden;
+});
+elements.settingsClose.addEventListener("click", () => {
+  elements.settingsPopover.hidden = true;
+});
+for (const button of elements.settingsPageButtons) {
+  button.addEventListener("click", () => {
+    const page = button.dataset.settingsPage;
+    for (const item of elements.settingsPageButtons) {
+      item.classList.toggle("is-active", item === button);
+    }
+    for (const panel of elements.settingsPanels) {
+      panel.classList.toggle("is-active", panel.dataset.settingsPanel === page);
+    }
+  });
+}
+for (const toggle of elements.componentToggles) {
+  toggle.addEventListener("change", () => {
+    state.settings.components[toggle.dataset.componentToggle] = toggle.checked;
+    saveSettings();
+    render();
+  });
+}
+for (const toggle of elements.collapseToggles) {
+  toggle.addEventListener("click", () => {
+    const key = toggle.dataset.collapseToggle;
+    state.settings.collapsed[key] = !state.settings.collapsed[key];
+    saveSettings();
+    render();
+  });
+}
 elements.todoForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const text = elements.todoText.value.trim();
