@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f0e8" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="万年历" />
+    <title>万年历</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Perpetual Calendar</p>
+          <h1>万年历</h1>
+        </div>
+        <div class="header-actions" aria-label="日历操作">
+          <button class="icon-button" id="prevMonth" type="button" title="上个月" aria-label="上个月">
+            <span aria-hidden="true">‹</span>
+          </button>
+          <button class="today-button" id="todayButton" type="button">今天</button>
+          <button class="icon-button" id="nextMonth" type="button" title="下个月" aria-label="下个月">
+            <span aria-hidden="true">›</span>
+          </button>
+        </div>
+      </header>
+
+      <main class="layout">
+        <section class="calendar-panel" aria-label="月份日历">
+          <div class="month-toolbar">
+            <div class="month-title">
+              <button class="icon-button small" id="prevYear" type="button" title="上一年" aria-label="上一年">
+                <span aria-hidden="true">«</span>
+              </button>
+              <div>
+                <h2 id="monthTitle"></h2>
+                <p id="monthMeta"></p>
+              </div>
+              <button class="icon-button small" id="nextYear" type="button" title="下一年" aria-label="下一年">
+                <span aria-hidden="true">»</span>
+              </button>
+            </div>
+
+            <div class="selectors">
+              <label>
+                <span>年份</span>
+                <input id="yearInput" type="number" min="1901" max="2100" inputmode="numeric" />
+              </label>
+              <label>
+                <span>月份</span>
+                <select id="monthSelect"></select>
+              </label>
+            </div>
+          </div>
+
+          <div class="weekday-grid" aria-hidden="true">
+            <span>一</span>
+            <span>二</span>
+            <span>三</span>
+            <span>四</span>
+            <span>五</span>
+            <span>六</span>
+            <span>日</span>
+          </div>
+          <div class="calendar-grid" id="calendarGrid" role="grid" aria-label="日历日期"></div>
+        </section>
+
+        <aside class="detail-panel" aria-label="日期详情">
+          <section class="date-hero">
+            <p id="selectedWeekday"></p>
+            <div class="selected-day" id="selectedDay"></div>
+            <h2 id="selectedSolar"></h2>
+            <p id="selectedLunar"></p>
+          </section>
+
+          <section class="info-section">
+            <h3>今日信息</h3>
+            <dl class="info-list">
+              <div>
+                <dt>农历</dt>
+                <dd id="lunarDetail"></dd>
+              </div>
+              <div>
+                <dt>干支</dt>
+                <dd id="ganzhiDetail"></dd>
+              </div>
+              <div>
+                <dt>节日/节气</dt>
+                <dd id="festivalDetail"></dd>
+              </div>
+            </dl>
+          </section>
+
+          <section class="info-section">
+            <h3>本月节日</h3>
+            <ul class="event-list" id="monthEvents"></ul>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

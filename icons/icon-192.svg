@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="42" fill="#f6f1e9"/>
+  <rect x="32" y="42" width="128" height="112" rx="16" fill="#fffaf2" stroke="#20242a" stroke-width="8"/>
+  <path d="M32 72h128" stroke="#b73e2f" stroke-width="8"/>
+  <path d="M66 28v30M126 28v30" stroke="#1f6f78" stroke-width="12" stroke-linecap="round"/>
+  <text x="96" y="126" text-anchor="middle" font-family="Arial, sans-serif" font-size="58" font-weight="800" fill="#20242a">历</text>
+</svg>
