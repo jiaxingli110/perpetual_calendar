@@ -4,3 +4,4 @@ android/
 ios/
 www/
 *.log
+assets/solar-terms/*.png

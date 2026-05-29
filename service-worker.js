@@ -1,4 +1,4 @@
-const CACHE_NAME = "perpetual-calendar-v2";
+const CACHE_NAME = "perpetual-calendar-v6";
 const ASSETS = [
   "./",
   "./index.html",
@@ -8,7 +8,31 @@ const ASSETS = [
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/icon-192.svg",
-  "./icons/icon-512.svg"
+  "./icons/icon-512.svg",
+  "./assets/solar-terms/xiaohan.jpg",
+  "./assets/solar-terms/dahan.jpg",
+  "./assets/solar-terms/lichun.jpg",
+  "./assets/solar-terms/yushui.jpg",
+  "./assets/solar-terms/jingzhe.jpg",
+  "./assets/solar-terms/chunfen.jpg",
+  "./assets/solar-terms/qingming.jpg",
+  "./assets/solar-terms/guyu.jpg",
+  "./assets/solar-terms/lixia.jpg",
+  "./assets/solar-terms/xiaoman.jpg",
+  "./assets/solar-terms/mangzhong.jpg",
+  "./assets/solar-terms/xiazhi.jpg",
+  "./assets/solar-terms/xiaoshu.jpg",
+  "./assets/solar-terms/dashu.jpg",
+  "./assets/solar-terms/liqiu.jpg",
+  "./assets/solar-terms/chushu.jpg",
+  "./assets/solar-terms/bailu.jpg",
+  "./assets/solar-terms/qiufen.jpg",
+  "./assets/solar-terms/hanlu.jpg",
+  "./assets/solar-terms/shuangjiang.jpg",
+  "./assets/solar-terms/lidong.jpg",
+  "./assets/solar-terms/xiaoxue.jpg",
+  "./assets/solar-terms/daxue.jpg",
+  "./assets/solar-terms/dongzhi.jpg"
 ];
 
 self.addEventListener("install", (event) => {

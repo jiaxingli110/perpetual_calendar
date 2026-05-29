@@ -36,4 +36,10 @@ for (const entry of fs.readdirSync(iconSource, { withFileTypes: true })) {
   }
 }
 
+const assetSource = path.join(root, "assets");
+const assetTarget = path.join(output, "assets");
+if (fs.existsSync(assetSource)) {
+  fs.cpSync(assetSource, assetTarget, { recursive: true });
+}
+
 console.log(`Prepared mobile web assets in ${output}`);

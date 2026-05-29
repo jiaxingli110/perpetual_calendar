@@ -69,10 +69,80 @@ const lunarFestivals = {
   "12-23": "北方小年",
   "12-24": "南方小年"
 };
+const termVisuals = {
+  "小寒": ["", "寒意渐深", "assets/solar-terms/xiaohan.jpg"],
+  "大寒": ["", "岁末严寒", "assets/solar-terms/dahan.jpg"],
+  "立春": ["", "春气初生", "assets/solar-terms/lichun.jpg"],
+  "雨水": ["", "润物生长", "assets/solar-terms/yushui.jpg"],
+  "惊蛰": ["", "万物苏醒", "assets/solar-terms/jingzhe.jpg"],
+  "春分": ["", "昼夜均分", "assets/solar-terms/chunfen.jpg"],
+  "清明": ["", "清朗明净", "assets/solar-terms/qingming.jpg"],
+  "谷雨": ["", "雨生百谷", "assets/solar-terms/guyu.jpg"],
+  "立夏": ["", "夏意初来", "assets/solar-terms/lixia.jpg"],
+  "小满": ["", "麦穗渐满", "assets/solar-terms/xiaoman.jpg"],
+  "芒种": ["", "有芒可种", "assets/solar-terms/mangzhong.jpg"],
+  "夏至": ["", "白昼最长", "assets/solar-terms/xiazhi.jpg"],
+  "小暑": ["", "暑气初盛", "assets/solar-terms/xiaoshu.jpg"],
+  "大暑": ["", "一年最热", "assets/solar-terms/dashu.jpg"],
+  "立秋": ["", "秋风将至", "assets/solar-terms/liqiu.jpg"],
+  "处暑": ["", "暑气渐止", "assets/solar-terms/chushu.jpg"],
+  "白露": ["", "露凝而白", "assets/solar-terms/bailu.jpg"],
+  "秋分": ["", "秋色平分", "assets/solar-terms/qiufen.jpg"],
+  "寒露": ["", "露寒将凝", "assets/solar-terms/hanlu.jpg"],
+  "霜降": ["", "霜色渐浓", "assets/solar-terms/shuangjiang.jpg"],
+  "立冬": ["", "冬令开始", "assets/solar-terms/lidong.jpg"],
+  "小雪": ["", "初雪将临", "assets/solar-terms/xiaoxue.jpg"],
+  "大雪": ["", "雪意渐盛", "assets/solar-terms/daxue.jpg"],
+  "冬至": ["", "阴极阳生", "assets/solar-terms/dongzhi.jpg"]
+};
+const monthlyRecommendations = {
+  "01-early": ["1月上旬", ["砂糖橘", "苹果", "梨"], ["白菜", "萝卜", "芹菜"], ["带鱼", "牡蛎", "鳕鱼"]],
+  "01-mid": ["1月中旬", ["橙子", "柚子", "猕猴桃"], ["菠菜", "山药", "冬笋"], ["黄鱼", "海参", "扇贝"]],
+  "01-late": ["1月下旬", ["车厘子", "草莓", "苹果"], ["莲藕", "菜心", "花菜"], ["鲈鱼", "蛤蜊", "牡蛎"]],
+  "02-early": ["2月上旬", ["草莓", "橙子", "柚子"], ["春笋", "韭黄", "菠菜"], ["鲳鱼", "蛏子", "带鱼"]],
+  "02-mid": ["2月中旬", ["草莓", "枇杷", "苹果"], ["豌豆苗", "荠菜", "芦笋"], ["蛤蜊", "鲈鱼", "黄鱼"]],
+  "02-late": ["2月下旬", ["菠萝", "草莓", "桑葚"], ["香椿", "春笋", "韭菜"], ["海螺", "蛏子", "虾"]],
+  "03-early": ["3月上旬", ["草莓", "菠萝", "桑葚"], ["荠菜", "香椿", "春笋"], ["蛏子", "海螺", "鲫鱼"]],
+  "03-mid": ["3月中旬", ["枇杷", "菠萝", "草莓"], ["芦笋", "豌豆苗", "菠菜"], ["蛤蜊", "黄鱼", "鲈鱼"]],
+  "03-late": ["3月下旬", ["桑葚", "枇杷", "菠萝"], ["蚕豆", "春笋", "莴笋"], ["带鱼", "虾", "蛤蜊"]],
+  "04-early": ["4月上旬", ["枇杷", "桑葚", "菠萝"], ["蚕豆", "莴笋", "芦笋"], ["鲳鱼", "蛤蜊", "海虹"]],
+  "04-mid": ["4月中旬", ["樱桃", "枇杷", "桑葚"], ["豌豆", "茭白", "春笋"], ["小黄鱼", "皮皮虾", "蛏子"]],
+  "04-late": ["4月下旬", ["樱桃", "青梅", "枇杷"], ["蚕豆", "豌豆", "芦笋"], ["皮皮虾", "鲳鱼", "海螺"]],
+  "05-early": ["5月上旬", ["樱桃", "枇杷", "甜瓜"], ["蚕豆", "茭白", "黄瓜"], ["皮皮虾", "小黄鱼", "蛏子"]],
+  "05-mid": ["5月中旬", ["杨梅", "枇杷", "荔枝"], ["番茄", "黄瓜", "豇豆"], ["花蛤", "海虾", "鲳鱼"]],
+  "05-late": ["5月下旬", ["杨梅", "荔枝", "甜瓜"], ["茭白", "番茄", "丝瓜"], ["花蛤", "皮皮虾", "鲈鱼"]],
+  "06-early": ["6月上旬", ["西瓜", "杨梅", "荔枝"], ["丝瓜", "毛豆", "黄瓜"], ["小龙虾", "花蛤", "鲍鱼"]],
+  "06-mid": ["6月中旬", ["桃子", "西瓜", "蓝莓"], ["茄子", "冬瓜", "苦瓜"], ["小龙虾", "蛤蜊", "海虾"]],
+  "06-late": ["6月下旬", ["葡萄", "桃子", "甜瓜"], ["毛豆", "空心菜", "丝瓜"], ["鲍鱼", "花蛤", "带鱼"]],
+  "07-early": ["7月上旬", ["西瓜", "桃子", "葡萄"], ["冬瓜", "苦瓜", "茄子"], ["小龙虾", "海虾", "蛏子"]],
+  "07-mid": ["7月中旬", ["龙眼", "葡萄", "哈密瓜"], ["丝瓜", "秋葵", "空心菜"], ["鲍鱼", "花蛤", "鲈鱼"]],
+  "07-late": ["7月下旬", ["梨", "桃子", "葡萄"], ["莲藕", "毛豆", "黄瓜"], ["带鱼", "海虾", "蛤蜊"]],
+  "08-early": ["8月上旬", ["葡萄", "梨", "龙眼"], ["莲藕", "秋葵", "茄子"], ["梭子蟹", "海虾", "鲳鱼"]],
+  "08-mid": ["8月中旬", ["无花果", "葡萄", "梨"], ["南瓜", "莲藕", "毛豆"], ["梭子蟹", "带鱼", "蛤蜊"]],
+  "08-late": ["8月下旬", ["石榴", "梨", "葡萄"], ["山药", "莲藕", "芋头"], ["梭子蟹", "海虾", "鲈鱼"]],
+  "09-early": ["9月上旬", ["石榴", "梨", "柚子"], ["莲藕", "山药", "南瓜"], ["螃蟹", "带鱼", "鲳鱼"]],
+  "09-mid": ["9月中旬", ["柿子", "石榴", "葡萄"], ["芋头", "山药", "秋葵"], ["大闸蟹", "海虾", "鲈鱼"]],
+  "09-late": ["9月下旬", ["柿子", "冬枣", "梨"], ["南瓜", "芋头", "莲藕"], ["大闸蟹", "黄鱼", "带鱼"]],
+  "10-early": ["10月上旬", ["柿子", "冬枣", "柚子"], ["板栗", "南瓜", "山药"], ["大闸蟹", "带鱼", "鲈鱼"]],
+  "10-mid": ["10月中旬", ["苹果", "柚子", "石榴"], ["萝卜", "白菜", "莲藕"], ["梭子蟹", "牡蛎", "海虾"]],
+  "10-late": ["10月下旬", ["橙子", "苹果", "柚子"], ["芥蓝", "菜心", "花菜"], ["牡蛎", "黄鱼", "带鱼"]],
+  "11-early": ["11月上旬", ["橙子", "柚子", "苹果"], ["白菜", "萝卜", "山药"], ["牡蛎", "带鱼", "鳕鱼"]],
+  "11-mid": ["11月中旬", ["橘子", "橙子", "猕猴桃"], ["冬笋", "菠菜", "芥蓝"], ["海参", "扇贝", "黄鱼"]],
+  "11-late": ["11月下旬", ["砂糖橘", "苹果", "柚子"], ["莲藕", "白菜", "菜心"], ["牡蛎", "鲈鱼", "蛤蜊"]],
+  "12-early": ["12月上旬", ["砂糖橘", "橙子", "苹果"], ["萝卜", "白菜", "花菜"], ["带鱼", "牡蛎", "鳕鱼"]],
+  "12-mid": ["12月中旬", ["柚子", "猕猴桃", "冬枣"], ["冬笋", "芹菜", "菠菜"], ["海参", "扇贝", "黄鱼"]],
+  "12-late": ["12月下旬", ["车厘子", "橙子", "苹果"], ["山药", "莲藕", "菜心"], ["牡蛎", "鲈鱼", "蛤蜊"]]
+};
+const defaultSettings = {
+  showJapanHolidays: false
+};
 
 const state = {
   view: new Date(),
-  selected: new Date()
+  selected: new Date(),
+  settings: loadSettings(),
+  todos: loadTodos(),
+  reminderTimers: new Map()
 };
 
 const elements = {
@@ -88,7 +158,15 @@ const elements = {
   lunarDetail: document.querySelector("#lunarDetail"),
   ganzhiDetail: document.querySelector("#ganzhiDetail"),
   festivalDetail: document.querySelector("#festivalDetail"),
-  monthEvents: document.querySelector("#monthEvents")
+  monthEvents: document.querySelector("#monthEvents"),
+  japanHolidayToggle: document.querySelector("#japanHolidayToggle"),
+  seasonRecommendations: document.querySelector("#seasonRecommendations"),
+  todoForm: document.querySelector("#todoForm"),
+  todoText: document.querySelector("#todoText"),
+  todoDate: document.querySelector("#todoDate"),
+  todoTime: document.querySelector("#todoTime"),
+  todoReminder: document.querySelector("#todoReminder"),
+  todoList: document.querySelector("#todoList")
 };
 
 for (let month = 0; month < 12; month += 1) {
@@ -112,6 +190,30 @@ function dateKey(date) {
 
 function monthKey(month, day) {
   return `${pad(month)}-${pad(day)}`;
+}
+
+function loadSettings() {
+  try {
+    return { ...defaultSettings, ...JSON.parse(localStorage.getItem("calendarSettings") || "{}") };
+  } catch {
+    return { ...defaultSettings };
+  }
+}
+
+function saveSettings() {
+  localStorage.setItem("calendarSettings", JSON.stringify(state.settings));
+}
+
+function loadTodos() {
+  try {
+    return JSON.parse(localStorage.getItem("calendarTodos") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveTodos() {
+  localStorage.setItem("calendarTodos", JSON.stringify(state.todos));
 }
 
 function leapMonth(year) {
@@ -227,7 +329,9 @@ function getFestivals(date, lunar) {
   const events = [];
   const solar = solarFestivals[monthKey(date.getMonth() + 1, date.getDate())];
   const term = getSolarTerm(date);
+  const legalHoliday = getChineseLegalHoliday(date, lunar, term);
 
+  if (legalHoliday) events.push({ type: "legal", name: `法定·${legalHoliday}` });
   if (solar) events.push({ type: "festival", name: solar });
   if (lunar && !lunar.isLeap) {
     const lunarEvent = lunarFestivals[monthKey(lunar.month, lunar.day)];
@@ -237,7 +341,99 @@ function getFestivals(date, lunar) {
     }
   }
   if (term) events.push({ type: "term", name: term });
+  const japanHoliday = state.settings.showJapanHolidays ? getJapanHoliday(date) : "";
+  if (japanHoliday) events.push({ type: "japan", name: japanHoliday });
   return events;
+}
+
+function getPeriodKey(day) {
+  if (day <= 10) return "early";
+  if (day <= 20) return "mid";
+  return "late";
+}
+
+function getChineseLegalHoliday(date, lunar, term) {
+  const key = monthKey(date.getMonth() + 1, date.getDate());
+  if (key === "01-01") return "元旦";
+  if (key === "05-01" || key === "05-02") return "劳动节";
+  if (key === "10-01" || key === "10-02" || key === "10-03") return "国庆节";
+  if (term === "清明") return "清明节";
+  if (!lunar || lunar.isLeap) return "";
+  if (lunar.month === 12 && lunar.day === monthDays(lunar.year, 12)) return "春节";
+  if (lunar.month === 1 && lunar.day >= 1 && lunar.day <= 3) return "春节";
+  if (lunar.month === 5 && lunar.day === 5) return "端午节";
+  if (lunar.month === 8 && lunar.day === 15) return "中秋节";
+  return "";
+}
+
+function nthMonday(year, monthIndex, nth) {
+  const first = new Date(year, monthIndex, 1);
+  const offset = (8 - first.getDay()) % 7;
+  return 1 + offset + (nth - 1) * 7;
+}
+
+function springEquinoxDay(year) {
+  return Math.floor(20.8431 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
+function autumnEquinoxDay(year) {
+  return Math.floor(23.2488 + 0.242194 * (year - 1980) - Math.floor((year - 1980) / 4));
+}
+
+function baseJapanHolidayMap(year) {
+  const holidays = new Map([
+    [`${year}-01-01`, "元日"],
+    [`${year}-01-${pad(nthMonday(year, 0, 2))}`, "成人の日"],
+    [`${year}-02-11`, "建国記念の日"],
+    [`${year}-02-23`, "天皇誕生日"],
+    [`${year}-03-${pad(springEquinoxDay(year))}`, "春分の日"],
+    [`${year}-04-29`, "昭和の日"],
+    [`${year}-05-03`, "憲法記念日"],
+    [`${year}-05-04`, "みどりの日"],
+    [`${year}-05-05`, "こどもの日"],
+    [`${year}-07-${pad(nthMonday(year, 6, 3))}`, "海の日"],
+    [`${year}-08-11`, "山の日"],
+    [`${year}-09-${pad(nthMonday(year, 8, 3))}`, "敬老の日"],
+    [`${year}-09-${pad(autumnEquinoxDay(year))}`, "秋分の日"],
+    [`${year}-10-${pad(nthMonday(year, 9, 2))}`, "スポーツの日"],
+    [`${year}-11-03`, "文化の日"],
+    [`${year}-11-23`, "勤労感謝の日"]
+  ]);
+
+  for (let month = 0; month < 12; month += 1) {
+    const days = new Date(year, month + 1, 0).getDate();
+    for (let day = 2; day < days; day += 1) {
+      const prev = `${year}-${pad(month + 1)}-${pad(day - 1)}`;
+      const current = `${year}-${pad(month + 1)}-${pad(day)}`;
+      const next = `${year}-${pad(month + 1)}-${pad(day + 1)}`;
+      if (!holidays.has(current) && holidays.has(prev) && holidays.has(next)) {
+        holidays.set(current, "国民の休日");
+      }
+    }
+  }
+
+  const originalKeys = [...holidays.keys()];
+  for (const key of originalKeys) {
+    const [holidayYear, holidayMonth, holidayDay] = key.split("-").map(Number);
+    const date = new Date(holidayYear, holidayMonth - 1, holidayDay);
+    if (date.getDay() !== 0) continue;
+    let substitute = new Date(date.getFullYear(), date.getMonth(), date.getDate() + 1);
+    while (holidays.has(dateKey(substitute))) {
+      substitute = new Date(substitute.getFullYear(), substitute.getMonth(), substitute.getDate() + 1);
+    }
+    holidays.set(dateKey(substitute), "振替休日");
+  }
+
+  return holidays;
+}
+
+function getJapanHoliday(date) {
+  return baseJapanHolidayMap(date.getFullYear()).get(dateKey(date)) || "";
+}
+
+function todosForDate(date) {
+  const key = dateKey(date);
+  return state.todos.filter((todo) => todo.date === key);
 }
 
 function clampYear(year) {
@@ -277,6 +473,8 @@ function renderCalendar() {
   for (const date of dates) {
     const lunar = toLunar(date);
     const events = getFestivals(date, lunar);
+    const term = getSolarTerm(date);
+    const todos = todosForDate(date);
     const button = document.createElement("button");
     button.className = "day-cell";
     button.type = "button";
@@ -286,20 +484,33 @@ function renderCalendar() {
 
     if (date.getMonth() !== month) button.classList.add("is-muted");
     if (date.getDay() === 0 || date.getDay() === 6) button.classList.add("is-weekend");
+    if (events.some((event) => event.type === "legal")) button.classList.add("is-legal-holiday");
+    if (events.some((event) => event.type === "japan")) button.classList.add("is-japan-holiday");
     if (sameDay(date, today)) button.classList.add("is-today");
     if (sameDay(date, state.selected)) button.classList.add("is-selected");
+    if (termVisuals[term]?.[2]) {
+      button.classList.add("has-term-bg");
+      button.style.setProperty("--term-bg", `url("${termVisuals[term][2]}")`);
+    }
 
     button.innerHTML = `
       <span class="solar">${date.getDate()}</span>
       <span class="lunar">${lunar ? lunarDayName(lunar) : ""}</span>
+      ${termVisuals[term]?.[0] ? `<span class="term-art" title="${termVisuals[term][1]}">${termVisuals[term][0]}</span>` : ""}
       <span class="tags"></span>
     `;
 
     const tags = button.querySelector(".tags");
-    for (const event of events.slice(0, 2)) {
+    for (const event of events.slice(0, 3)) {
       const tag = document.createElement("span");
       tag.className = `tag ${event.type}`;
       tag.textContent = event.name;
+      tags.append(tag);
+    }
+    if (todos.length) {
+      const tag = document.createElement("span");
+      tag.className = "tag todo";
+      tag.textContent = `${todos.filter((todo) => !todo.done).length || todos.length}项待办`;
       tags.append(tag);
     }
 
@@ -320,6 +531,7 @@ function renderDetails() {
   elements.lunarDetail.textContent = lunar ? `${ganzhiYear(lunar.year)}年 ${lunarFullName(lunar)}` : "超出农历数据范围";
   elements.ganzhiDetail.textContent = `${ganzhiYear(date.getFullYear())}年 ${ganzhiMonth(date.getFullYear(), date.getMonth() + 1)}月 ${ganzhiDay(date)}日`;
   elements.festivalDetail.textContent = events.length ? events.map((event) => event.name).join("、") : "无";
+  elements.todoDate.value = dateKey(date);
 }
 
 function renderMonthEvents() {
@@ -352,10 +564,97 @@ function renderMonthEvents() {
   }
 }
 
+function renderSeasonRecommendations() {
+  const month = state.selected.getMonth() + 1;
+  const period = getPeriodKey(state.selected.getDate());
+  const recommendation = monthlyRecommendations[`${pad(month)}-${period}`];
+  const groups = [
+    ["水果", recommendation[1]],
+    ["蔬菜", recommendation[2]],
+    ["海鲜", recommendation[3]]
+  ];
+
+  elements.seasonRecommendations.replaceChildren();
+  for (const [label, items] of groups) {
+    const section = document.createElement("div");
+    section.className = "season-card";
+    section.innerHTML = `<strong>${recommendation[0]}${label}</strong><p>${items.join(" · ")}</p>`;
+    elements.seasonRecommendations.append(section);
+  }
+}
+
+function renderTodos() {
+  const todos = todosForDate(state.selected).sort((a, b) => `${a.time || ""}`.localeCompare(b.time || ""));
+  elements.todoList.replaceChildren();
+
+  if (!todos.length) {
+    const empty = document.createElement("li");
+    empty.className = "todo-empty";
+    empty.textContent = "这一天还没有待办";
+    elements.todoList.append(empty);
+    return;
+  }
+
+  for (const todo of todos) {
+    const item = document.createElement("li");
+    item.className = todo.done ? "is-done" : "";
+    item.innerHTML = `
+      <label>
+        <input type="checkbox" ${todo.done ? "checked" : ""} />
+        <span>
+          <strong>${todo.text}</strong>
+          <small>${todo.time || "全天"}${todo.reminder ? " · 提醒" : ""}</small>
+        </span>
+      </label>
+      <button type="button" aria-label="删除待办">×</button>
+    `;
+    item.querySelector("input").addEventListener("change", (event) => {
+      todo.done = event.target.checked;
+      saveTodos();
+      render();
+    });
+    item.querySelector("button").addEventListener("click", () => {
+      state.todos = state.todos.filter((current) => current.id !== todo.id);
+      saveTodos();
+      scheduleReminders();
+      render();
+    });
+    elements.todoList.append(item);
+  }
+}
+
+function notifyTodo(todo) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  new Notification("万年历待办提醒", {
+    body: `${todo.time || "现在"} · ${todo.text}`,
+    tag: todo.id
+  });
+}
+
+function scheduleReminders() {
+  for (const timer of state.reminderTimers.values()) {
+    clearTimeout(timer);
+  }
+  state.reminderTimers.clear();
+
+  const now = Date.now();
+  for (const todo of state.todos) {
+    if (!todo.reminder || todo.done || !todo.time) continue;
+    const due = new Date(`${todo.date}T${todo.time}:00`).getTime();
+    const delay = due - now;
+    if (delay > 0 && delay < 2147483647) {
+      state.reminderTimers.set(todo.id, setTimeout(() => notifyTodo(todo), delay));
+    }
+  }
+}
+
 function render() {
   renderCalendar();
   renderDetails();
   renderMonthEvents();
+  renderSeasonRecommendations();
+  renderTodos();
+  elements.japanHolidayToggle.checked = state.settings.showJapanHolidays;
 }
 
 document.querySelector("#prevMonth").addEventListener("click", () => setView(state.view.getFullYear(), state.view.getMonth() - 1));
@@ -365,6 +664,36 @@ document.querySelector("#nextYear").addEventListener("click", () => setView(stat
 document.querySelector("#todayButton").addEventListener("click", () => selectDate(new Date()));
 elements.yearInput.addEventListener("change", () => setView(Number(elements.yearInput.value), state.view.getMonth()));
 elements.monthSelect.addEventListener("change", () => setView(state.view.getFullYear(), Number(elements.monthSelect.value)));
+elements.japanHolidayToggle.addEventListener("change", (event) => {
+  state.settings.showJapanHolidays = event.target.checked;
+  saveSettings();
+  render();
+});
+elements.todoForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const text = elements.todoText.value.trim();
+  if (!text) return;
+
+  const reminder = elements.todoReminder.checked;
+  if (reminder && "Notification" in window && Notification.permission === "default") {
+    await Notification.requestPermission();
+  }
+
+  state.todos.push({
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    text,
+    date: elements.todoDate.value || dateKey(state.selected),
+    time: elements.todoTime.value,
+    reminder,
+    done: false
+  });
+  elements.todoText.value = "";
+  elements.todoTime.value = "";
+  elements.todoReminder.checked = false;
+  saveTodos();
+  scheduleReminders();
+  render();
+});
 
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
@@ -372,4 +701,5 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+scheduleReminders();
 selectDate(new Date());

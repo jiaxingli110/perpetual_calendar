@@ -10,7 +10,7 @@
     <title>万年历</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v=20260529-4" />
+    <link rel="stylesheet" href="styles.css?v=20260529-9" />
   </head>
   <body>
     <div class="app-shell">
@@ -99,10 +99,40 @@
             <h3>本月节日</h3>
             <ul class="event-list" id="monthEvents"></ul>
           </section>
+
+          <section class="info-section">
+            <h3>设置</h3>
+            <label class="setting-row">
+              <input id="japanHolidayToggle" type="checkbox" />
+              <span>显示日本红日子</span>
+            </label>
+          </section>
+
+          <section class="info-section">
+            <h3>当季推荐</h3>
+            <div class="season-grid" id="seasonRecommendations"></div>
+          </section>
+
+          <section class="info-section">
+            <h3>待办提醒</h3>
+            <form class="todo-form" id="todoForm">
+              <input id="todoText" type="text" placeholder="添加待办" autocomplete="off" />
+              <div class="todo-fields">
+                <input id="todoDate" type="date" />
+                <input id="todoTime" type="time" />
+              </div>
+              <label class="setting-row compact">
+                <input id="todoReminder" type="checkbox" />
+                <span>到时提醒</span>
+              </label>
+              <button class="todo-add" type="submit">添加</button>
+            </form>
+            <ul class="todo-list" id="todoList"></ul>
+          </section>
         </aside>
       </main>
     </div>
 
-    <script src="app.js?v=20260529-4" defer></script>
+    <script src="app.js?v=20260529-9" defer></script>
   </body>
 </html>
