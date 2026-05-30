@@ -162,6 +162,11 @@ const historyToday = {
     ["1953", "人类首次登顶珠穆朗玛峰。", "Humans reached the summit of Mount Everest for the first time."],
     ["1919", "爱丁顿日食观测支持广义相对论。", "Eddington's eclipse observations supported general relativity."]
   ],
+  "05-30": [
+    ["1431", "法国民族英雄贞德在鲁昂遇难。", "Joan of Arc died in Rouen."],
+    ["1913", "《伦敦条约》签署，第一次巴尔干战争结束。", "The Treaty of London ended the First Balkan War."],
+    ["1967", "尼日利亚东部地区宣布成立比亚法拉共和国。", "Eastern Nigeria declared the Republic of Biafra."]
+  ],
   "06-01": [
     ["1926", "玛丽莲·梦露出生。", "Marilyn Monroe was born."],
     ["1980", "美国有线电视新闻网 CNN 开播。", "CNN began broadcasting in the United States."]
@@ -191,8 +196,57 @@ const historyToday = {
     ["1991", "苏联总统戈尔巴乔夫宣布辞职。", "Mikhail Gorbachev resigned as president of the Soviet Union."]
   ]
 };
+const chineseHolidayPlans = {
+  2026: {
+    source: "国务院办公厅关于2026年部分节假日安排的通知",
+    sourceDate: "2025-11-04",
+    holidays: {
+      "2026-01-01": "元旦",
+      "2026-01-02": "元旦",
+      "2026-01-03": "元旦",
+      "2026-02-15": "春节",
+      "2026-02-16": "春节",
+      "2026-02-17": "春节",
+      "2026-02-18": "春节",
+      "2026-02-19": "春节",
+      "2026-02-20": "春节",
+      "2026-02-21": "春节",
+      "2026-02-22": "春节",
+      "2026-02-23": "春节",
+      "2026-04-04": "清明节",
+      "2026-04-05": "清明节",
+      "2026-04-06": "清明节",
+      "2026-05-01": "劳动节",
+      "2026-05-02": "劳动节",
+      "2026-05-03": "劳动节",
+      "2026-05-04": "劳动节",
+      "2026-05-05": "劳动节",
+      "2026-06-19": "端午节",
+      "2026-06-20": "端午节",
+      "2026-06-21": "端午节",
+      "2026-09-25": "中秋节",
+      "2026-09-26": "中秋节",
+      "2026-09-27": "中秋节",
+      "2026-10-01": "国庆节",
+      "2026-10-02": "国庆节",
+      "2026-10-03": "国庆节",
+      "2026-10-04": "国庆节",
+      "2026-10-05": "国庆节",
+      "2026-10-06": "国庆节",
+      "2026-10-07": "国庆节"
+    },
+    workdays: {
+      "2026-01-04": "元旦调休",
+      "2026-02-14": "春节调休",
+      "2026-02-28": "春节调休",
+      "2026-05-09": "劳动节调休",
+      "2026-09-20": "国庆节调休",
+      "2026-10-10": "国庆节调休"
+    }
+  }
+};
 const defaultSettings = {
-  showJapanHolidays: false,
+  showJapanHolidays: true,
   components: {
     today: true,
     events: true,
@@ -203,7 +257,6 @@ const defaultSettings = {
   collapsed: {
     today: false,
     events: false,
-    redDays: false,
     recommendations: false,
     todos: false
   }
@@ -231,13 +284,13 @@ const elements = {
   ganzhiDetail: document.querySelector("#ganzhiDetail"),
   festivalDetail: document.querySelector("#festivalDetail"),
   monthEvents: document.querySelector("#monthEvents"),
+  historyTitle: document.querySelector("#historyTitle"),
   historyList: document.querySelector("#historyList"),
   settingsButton: document.querySelector("#settingsButton"),
   settingsPopover: document.querySelector("#settingsPopover"),
   settingsClose: document.querySelector("#settingsClose"),
   settingsPageButtons: document.querySelectorAll("[data-settings-page]"),
   settingsPanels: document.querySelectorAll("[data-settings-panel]"),
-  japanHolidayToggle: document.querySelector("#japanHolidayToggle"),
   componentToggles: document.querySelectorAll("[data-component-toggle]"),
   componentSections: document.querySelectorAll("[data-component]"),
   collapseToggles: document.querySelectorAll("[data-collapse-toggle]"),
@@ -276,10 +329,14 @@ function monthKey(month, day) {
 function loadSettings() {
   try {
     const saved = JSON.parse(localStorage.getItem("calendarSettings") || "{}");
+    const savedComponents = { ...(saved.components || {}) };
+    if (savedComponents.redDays === undefined && saved.showJapanHolidays !== undefined) {
+      savedComponents.redDays = saved.showJapanHolidays;
+    }
     return {
       ...defaultSettings,
       ...saved,
-      components: { ...defaultSettings.components, ...(saved.components || {}) },
+      components: { ...defaultSettings.components, ...savedComponents },
       collapsed: { ...defaultSettings.collapsed, ...(saved.collapsed || {}) }
     };
   } catch {
@@ -417,8 +474,10 @@ function getFestivals(date, lunar) {
   const solar = solarFestivals[monthKey(date.getMonth() + 1, date.getDate())];
   const term = getSolarTerm(date);
   const legalHoliday = getChineseLegalHoliday(date, lunar, term);
+  const adjustedWorkday = getChineseAdjustedWorkday(date);
 
   if (legalHoliday) events.push({ type: "legal", name: `法定·${legalHoliday}` });
+  if (adjustedWorkday) events.push({ type: "workday", name: adjustedWorkday });
   if (solar) events.push({ type: "festival", name: solar });
   if (lunar && !lunar.isLeap) {
     const lunarEvent = lunarFestivals[monthKey(lunar.month, lunar.day)];
@@ -428,7 +487,7 @@ function getFestivals(date, lunar) {
     }
   }
   if (term) events.push({ type: "term", name: term });
-  const japanHoliday = state.settings.showJapanHolidays ? getJapanHoliday(date) : "";
+  const japanHoliday = state.settings.components.redDays !== false ? getJapanHoliday(date) : "";
   if (japanHoliday) events.push({ type: "japan", name: japanHoliday });
   return events;
 }
@@ -439,7 +498,28 @@ function getPeriodKey(day) {
   return "late";
 }
 
+function getChineseHolidayPlan(date) {
+  const plan = chineseHolidayPlans[date.getFullYear()];
+  if (!plan) return null;
+  const key = dateKey(date);
+  if (plan.holidays[key]) {
+    return { type: "holiday", name: plan.holidays[key], source: plan.source, sourceDate: plan.sourceDate };
+  }
+  if (plan.workdays[key]) {
+    return { type: "workday", name: plan.workdays[key], source: plan.source, sourceDate: plan.sourceDate };
+  }
+  return null;
+}
+
+function getChineseAdjustedWorkday(date) {
+  const plan = getChineseHolidayPlan(date);
+  return plan?.type === "workday" ? `调休·${plan.name}` : "";
+}
+
 function getChineseLegalHoliday(date, lunar, term) {
+  const plan = getChineseHolidayPlan(date);
+  if (plan?.type === "holiday") return plan.name;
+
   const key = monthKey(date.getMonth() + 1, date.getDate());
   if (key === "01-01") return "元旦";
   if (key === "05-01" || key === "05-02") return "劳动节";
@@ -632,6 +712,7 @@ function renderMonthEvents() {
     const lunar = toLunar(date);
     const events = getFestivals(date, lunar);
     for (const event of events) {
+      if (event.type === "japan") continue;
       items.push({ day, name: event.name });
     }
   }
@@ -654,17 +735,25 @@ function renderMonthEvents() {
 function getHistoryItems(date) {
   const key = monthKey(date.getMonth() + 1, date.getDate());
   return historyToday[key] || [
-    ["今日", "这一天也值得被记录。", "This date is still worth remembering."],
-    ["Today", "选择一个特别年份，给这一天添上一条属于你的记录。", "Pick a meaningful year and add your own memory for this date."]
+    [`${date.getMonth() + 1}月${date.getDate()}日`, "这一天暂未收录公开历史条目，但会随所选日期单独展示。", "No curated public event is stored for this date yet."],
+    ["你的记录", "可以把这一天的待办、纪念日或个人事件添加到右侧。", "Add a personal memory, anniversary, or task for this date."]
   ];
 }
 
 function renderHistory() {
+  const date = state.selected;
+  elements.historyTitle.textContent = `历史上的${date.getMonth() + 1}月${date.getDate()}日`;
   elements.historyList.replaceChildren();
-  for (const [year, zh, en] of getHistoryItems(state.selected)) {
+  for (const [year, zh, en] of getHistoryItems(date)) {
     const item = document.createElement("li");
     item.innerHTML = `<strong>${year}</strong><span>${zh}</span><small>${en}</small>`;
     elements.historyList.append(item);
+  }
+}
+
+function setComponentVisibility(key, visible) {
+  for (const section of document.querySelectorAll(`[data-component="${key}"]`)) {
+    section.hidden = !visible;
   }
 }
 
@@ -685,14 +774,63 @@ function applyComponentSettings() {
   }
 }
 
+const seasonalRecommendationExtras = {
+  fruit: {
+    1: ["橙子", "猕猴桃"],
+    2: ["沃柑", "梨"],
+    3: ["桑葚", "樱桃番茄"],
+    4: ["青梅", "凤梨"],
+    5: ["樱桃", "甜瓜"],
+    6: ["桃子", "蓝莓"],
+    7: ["哈密瓜", "李子"],
+    8: ["无花果", "石榴"],
+    9: ["冬枣", "葡萄"],
+    10: ["柿子", "苹果"],
+    11: ["柚子", "梨"],
+    12: ["砂糖橘", "脐橙"]
+  },
+  vegetable: {
+    1: ["山药", "冬笋"],
+    2: ["春笋", "菠菜"],
+    3: ["韭菜", "芦笋"],
+    4: ["豌豆", "莴笋"],
+    5: ["茄子", "丝瓜"],
+    6: ["空心菜", "毛豆"],
+    7: ["苦瓜", "冬瓜"],
+    8: ["南瓜", "莲藕"],
+    9: ["芋头", "秋葵"],
+    10: ["白萝卜", "菜心"],
+    11: ["白菜", "西兰花"],
+    12: ["花菜", "莲藕"]
+  },
+  seafood: {
+    1: ["海参", "扇贝"],
+    2: ["黄鱼", "蛏子"],
+    3: ["虾", "带鱼"],
+    4: ["小黄鱼", "皮皮虾"],
+    5: ["海虾", "鲳鱼"],
+    6: ["花蛤", "鲍鱼"],
+    7: ["蛏子", "鲈鱼"],
+    8: ["带鱼", "梭子蟹"],
+    9: ["黄鱼", "海虾"],
+    10: ["牡蛎", "带鱼"],
+    11: ["鳕鱼", "扇贝"],
+    12: ["海参", "黄鱼"]
+  }
+};
+
+function recommendedItems(kind, month, items) {
+  return [...new Set([...items, ...(seasonalRecommendationExtras[kind]?.[month] || [])])].slice(0, 5);
+}
+
 function renderSeasonRecommendations() {
   const month = state.selected.getMonth() + 1;
   const period = getPeriodKey(state.selected.getDate());
   const recommendation = monthlyRecommendations[`${pad(month)}-${period}`];
   const groups = [
-    ["水果", recommendation[1]],
-    ["蔬菜", recommendation[2]],
-    ["海鲜", recommendation[3]]
+    ["水果", recommendedItems("fruit", month, recommendation[1])],
+    ["蔬菜", recommendedItems("vegetable", month, recommendation[2])],
+    ["海鲜", recommendedItems("seafood", month, recommendation[3])]
   ];
 
   elements.seasonRecommendations.replaceChildren();
@@ -777,7 +915,6 @@ function render() {
   renderTodos();
   renderHistory();
   applyComponentSettings();
-  elements.japanHolidayToggle.checked = state.settings.showJapanHolidays;
 }
 
 document.querySelector("#prevMonth").addEventListener("click", () => setView(state.view.getFullYear(), state.view.getMonth() - 1));
@@ -787,11 +924,6 @@ document.querySelector("#nextYear").addEventListener("click", () => setView(stat
 document.querySelector("#todayButton").addEventListener("click", () => selectDate(new Date()));
 elements.yearInput.addEventListener("change", () => setView(Number(elements.yearInput.value), state.view.getMonth()));
 elements.monthSelect.addEventListener("change", () => setView(state.view.getFullYear(), Number(elements.monthSelect.value)));
-elements.japanHolidayToggle.addEventListener("change", (event) => {
-  state.settings.showJapanHolidays = event.target.checked;
-  saveSettings();
-  render();
-});
 elements.settingsButton.addEventListener("click", () => {
   elements.settingsPopover.hidden = !elements.settingsPopover.hidden;
 });
@@ -809,12 +941,27 @@ for (const button of elements.settingsPageButtons) {
     }
   });
 }
+function handleComponentToggle(event) {
+  const toggle = event.currentTarget;
+  const key = toggle.dataset.componentToggle;
+  state.settings.components[key] = toggle.checked;
+  if (key === "redDays") {
+    state.settings.showJapanHolidays = toggle.checked;
+  }
+  saveSettings();
+  if (key === "redDays") {
+    renderCalendar();
+    renderDetails();
+    renderMonthEvents();
+    return;
+  }
+  setComponentVisibility(key, toggle.checked);
+  applyComponentSettings();
+}
+
 for (const toggle of elements.componentToggles) {
-  toggle.addEventListener("change", () => {
-    state.settings.components[toggle.dataset.componentToggle] = toggle.checked;
-    saveSettings();
-    render();
-  });
+  toggle.addEventListener("input", handleComponentToggle);
+  toggle.addEventListener("change", handleComponentToggle);
 }
 for (const toggle of elements.collapseToggles) {
   toggle.addEventListener("click", () => {
@@ -850,8 +997,24 @@ elements.todoForm.addEventListener("submit", async (event) => {
   render();
 });
 
+function isLocalPreview() {
+  return location.protocol === "file:" || ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
+    if (isLocalPreview()) {
+      navigator.serviceWorker.getRegistrations()
+        .then((registrations) => Promise.all(registrations.map((registration) => registration.unregister())))
+        .catch(() => {});
+      if ("caches" in window) {
+        caches.keys()
+          .then((keys) => Promise.all(keys.map((key) => caches.delete(key))))
+          .catch(() => {});
+      }
+      return;
+    }
+
     navigator.serviceWorker.register("service-worker.js").catch(() => {});
   });
 }

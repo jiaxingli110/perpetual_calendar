@@ -10,7 +10,7 @@
     <title>万年历</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v=20260529-16" />
+    <link rel="stylesheet" href="styles.css?v=20260530-11" />
   </head>
   <body>
     <div class="app-shell">
@@ -27,6 +27,7 @@
             <span aria-hidden="true">›</span>
           </button>
         </div>
+        <button class="settings-button" id="settingsButton" type="button" title="设置" aria-label="设置">⚙</button>
       </header>
 
       <main class="layout">
@@ -70,7 +71,7 @@
 
           <section class="history-panel" aria-label="历史上的今天">
             <div class="history-title">
-              <h3>历史上的今天</h3>
+              <h3 id="historyTitle">历史上的今天</h3>
               <p>Today in History</p>
             </div>
             <ul class="history-list" id="historyList"></ul>
@@ -78,7 +79,6 @@
         </section>
 
         <aside class="detail-panel" aria-label="日期详情">
-          <button class="settings-button" id="settingsButton" type="button" title="设置" aria-label="设置">⚙</button>
           <div class="settings-popover" id="settingsPopover" hidden>
             <div class="settings-popover-head">
               <strong>设置</strong>
@@ -107,7 +107,11 @@
               </div>
               <div class="settings-subpage donate-page" data-settings-panel="donate">
                 <div class="settings-subtitle">捐赠</div>
-                <p>如果这个万年历帮到了你，可以请作者喝杯咖啡。</p>
+                <p>如果这个万年历帮到了你，可以请作者喝杯咖啡</p>
+                <figure class="donate-code">
+                  <img src="assets/donate/alipay.jpg" alt="支付宝收款码" />
+                  <figcaption>支付宝扫码支持</figcaption>
+                </figure>
                 <dl>
                   <div>
                     <dt>作者</dt>
@@ -118,7 +122,6 @@
                     <dd>471075887@qq.com</dd>
                   </div>
                 </dl>
-                <div class="donate-box">☕</div>
               </div>
             </div>
           </div>
@@ -159,17 +162,6 @@
             <ul class="event-list collapsible-body" id="monthEvents"></ul>
           </section>
 
-          <section class="info-section" data-component="redDays">
-            <button class="section-toggle" type="button" data-collapse-toggle="redDays" aria-expanded="true">
-              <span>红日子</span>
-              <span aria-hidden="true">⌄</span>
-            </button>
-            <label class="setting-row collapsible-body">
-              <input id="japanHolidayToggle" type="checkbox" />
-              <span>显示日本红日子</span>
-            </label>
-          </section>
-
           <section class="info-section" data-component="recommendations">
             <button class="section-toggle" type="button" data-collapse-toggle="recommendations" aria-expanded="true">
               <span>当季推荐</span>
@@ -201,6 +193,6 @@
       </main>
     </div>
 
-    <script src="app.js?v=20260529-16" defer></script>
+    <script src="app.js?v=20260530-11" defer></script>
   </body>
 </html>

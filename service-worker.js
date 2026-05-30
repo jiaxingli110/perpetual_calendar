@@ -1,4 +1,4 @@
-const CACHE_NAME = "perpetual-calendar-v13";
+const CACHE_NAME = "perpetual-calendar-v24";
 const ASSETS = [
   "./",
   "./index.html",
@@ -32,7 +32,8 @@ const ASSETS = [
   "./assets/solar-terms/lidong.jpg",
   "./assets/solar-terms/xiaoxue.jpg",
   "./assets/solar-terms/daxue.jpg",
-  "./assets/solar-terms/dongzhi.jpg"
+  "./assets/solar-terms/dongzhi.jpg",
+  "./assets/donate/alipay.jpg"
 ];
 
 self.addEventListener("install", (event) => {
