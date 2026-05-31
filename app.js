@@ -261,6 +261,7 @@ const defaultSettings = {
     todos: false
   }
 };
+const DEFAULT_REMINDER_TIME = "08:00";
 
 const state = {
   view: new Date(),
@@ -473,12 +474,14 @@ function getFestivals(date, lunar) {
   const events = [];
   const solar = solarFestivals[monthKey(date.getMonth() + 1, date.getDate())];
   const term = getSolarTerm(date);
+  const observance = getFloatingObservance(date);
   const legalHoliday = getChineseLegalHoliday(date, lunar, term);
   const adjustedWorkday = getChineseAdjustedWorkday(date);
 
   if (legalHoliday) events.push({ type: "legal", name: `法定·${legalHoliday}` });
   if (adjustedWorkday) events.push({ type: "workday", name: adjustedWorkday });
   if (solar) events.push({ type: "festival", name: solar });
+  if (observance) events.push({ type: "observance", name: observance });
   if (lunar && !lunar.isLeap) {
     const lunarEvent = lunarFestivals[monthKey(lunar.month, lunar.day)];
     if (lunarEvent) events.push({ type: "festival", name: lunarEvent });
@@ -490,6 +493,23 @@ function getFestivals(date, lunar) {
   const japanHoliday = state.settings.components.redDays !== false ? getJapanHoliday(date) : "";
   if (japanHoliday) events.push({ type: "japan", name: japanHoliday });
   return events;
+}
+
+function nthWeekdayOfMonth(year, monthIndex, weekday, nth) {
+  const first = new Date(year, monthIndex, 1);
+  const offset = (weekday - first.getDay() + 7) % 7;
+  return 1 + offset + (nth - 1) * 7;
+}
+
+function getFloatingObservance(date) {
+  const year = date.getFullYear();
+  const month = date.getMonth();
+  const day = date.getDate();
+
+  if (month === 4 && day === nthWeekdayOfMonth(year, 4, 0, 2)) return "母亲节";
+  if (month === 5 && day === nthWeekdayOfMonth(year, 5, 0, 3)) return "父亲节";
+  if (month === 10 && day === nthWeekdayOfMonth(year, 10, 4, 4)) return "感恩节";
+  return "";
 }
 
 function getPeriodKey(day) {
@@ -713,7 +733,7 @@ function renderMonthEvents() {
     const events = getFestivals(date, lunar);
     for (const event of events) {
       if (event.type === "japan") continue;
-      items.push({ day, name: event.name });
+      items.push({ day, name: event.name, type: event.type });
     }
   }
 
@@ -727,6 +747,7 @@ function renderMonthEvents() {
 
   for (const item of items) {
     const li = document.createElement("li");
+    li.className = `event-item ${item.type}`;
     li.innerHTML = `<strong>${item.name}</strong><span>${month + 1}月${item.day}日</span>`;
     elements.monthEvents.append(li);
   }
@@ -862,7 +883,7 @@ function renderTodos() {
         <input type="checkbox" ${todo.done ? "checked" : ""} />
         <span>
           <strong>${todo.text}</strong>
-          <small>${todo.time || "全天"}${todo.reminder ? " · 提醒" : ""}</small>
+          <small>${todo.reminder ? `${getReminderTime(todo)} · 提醒` : "全天"}</small>
         </span>
       </label>
       <button type="button" aria-label="删除待办">×</button>
@@ -870,11 +891,14 @@ function renderTodos() {
     item.querySelector("input").addEventListener("change", (event) => {
       todo.done = event.target.checked;
       saveTodos();
+      scheduleReminders();
       render();
     });
     item.querySelector("button").addEventListener("click", () => {
+      const deletedTodo = todo;
       state.todos = state.todos.filter((current) => current.id !== todo.id);
       saveTodos();
+      cancelNativeTodos([deletedTodo]).catch(() => {});
       scheduleReminders();
       render();
     });
@@ -882,10 +906,55 @@ function renderTodos() {
   }
 }
 
+function getReminderTime(todo) {
+  return todo.time || DEFAULT_REMINDER_TIME;
+}
+
+function getReminderDue(todo) {
+  return new Date(`${todo.date}T${getReminderTime(todo)}:00`);
+}
+
+function getNativeLocalNotifications() {
+  return window.Capacitor?.Plugins?.LocalNotifications || null;
+}
+
+function notificationId(todo) {
+  let hash = 0;
+  for (const char of todo.id) {
+    hash = (hash * 31 + char.charCodeAt(0)) | 0;
+  }
+  return Math.abs(hash) || 1;
+}
+
+async function requestReminderPermission() {
+  const localNotifications = getNativeLocalNotifications();
+  if (localNotifications) {
+    const current = await localNotifications.checkPermissions();
+    if (current.display === "granted") return true;
+    const requested = await localNotifications.requestPermissions();
+    return requested.display === "granted";
+  }
+
+  if (!("Notification" in window)) return false;
+  if (Notification.permission === "granted") return true;
+  if (Notification.permission === "default") {
+    return (await Notification.requestPermission()) === "granted";
+  }
+  return false;
+}
+
+async function cancelNativeTodos(todos) {
+  const localNotifications = getNativeLocalNotifications();
+  if (!localNotifications || !todos.length) return;
+  await localNotifications.cancel({
+    notifications: todos.map((todo) => ({ id: notificationId(todo) }))
+  });
+}
+
 function notifyTodo(todo) {
   if (!("Notification" in window) || Notification.permission !== "granted") return;
   new Notification("万年历待办提醒", {
-    body: `${todo.time || "现在"} · ${todo.text}`,
+    body: `${getReminderTime(todo)} · ${todo.text}`,
     tag: todo.id
   });
 }
@@ -898,12 +967,38 @@ function scheduleReminders() {
 
   const now = Date.now();
   for (const todo of state.todos) {
-    if (!todo.reminder || todo.done || !todo.time) continue;
-    const due = new Date(`${todo.date}T${todo.time}:00`).getTime();
+    if (!todo.reminder || todo.done) continue;
+    const due = getReminderDue(todo).getTime();
     const delay = due - now;
     if (delay > 0 && delay < 2147483647) {
       state.reminderTimers.set(todo.id, setTimeout(() => notifyTodo(todo), delay));
     }
+  }
+
+  scheduleNativeReminders().catch(() => {});
+}
+
+async function scheduleNativeReminders() {
+  const localNotifications = getNativeLocalNotifications();
+  if (!localNotifications) return;
+
+  const activeTodos = state.todos.filter((todo) => todo.reminder && !todo.done);
+  await cancelNativeTodos(state.todos);
+
+  const now = Date.now();
+  const scheduled = activeTodos
+    .map((todo) => ({ todo, due: getReminderDue(todo) }))
+    .filter(({ due }) => due.getTime() > now)
+    .map(({ todo, due }) => ({
+      id: notificationId(todo),
+      title: "万年历待办提醒",
+      body: todo.text,
+      schedule: { at: due, allowWhileIdle: true },
+      extra: { todoId: todo.id }
+    }));
+
+  if (scheduled.length) {
+    await localNotifications.schedule({ notifications: scheduled });
   }
 }
 
@@ -924,6 +1019,9 @@ document.querySelector("#nextYear").addEventListener("click", () => setView(stat
 document.querySelector("#todayButton").addEventListener("click", () => selectDate(new Date()));
 elements.yearInput.addEventListener("change", () => setView(Number(elements.yearInput.value), state.view.getMonth()));
 elements.monthSelect.addEventListener("change", () => setView(state.view.getFullYear(), Number(elements.monthSelect.value)));
+elements.todoText.addEventListener("pointerdown", () => {
+  elements.todoText.focus();
+});
 elements.settingsButton.addEventListener("click", () => {
   elements.settingsPopover.hidden = !elements.settingsPopover.hidden;
 });
@@ -977,8 +1075,8 @@ elements.todoForm.addEventListener("submit", async (event) => {
   if (!text) return;
 
   const reminder = elements.todoReminder.checked;
-  if (reminder && "Notification" in window && Notification.permission === "default") {
-    await Notification.requestPermission();
+  if (reminder) {
+    await requestReminderPermission();
   }
 
   state.todos.push({

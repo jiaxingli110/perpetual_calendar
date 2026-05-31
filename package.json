@@ -23,6 +23,7 @@
       "app.js",
       "manifest.webmanifest",
       "service-worker.js",
+      "assets/**/*",
       "icons/**/*",
       "electron/**/*"
     ],
@@ -42,11 +43,14 @@
     }
   },
   "devDependencies": {
-    "@capacitor/cli": "^7.0.0",
     "@capacitor/android": "^7.0.0",
+    "@capacitor/cli": "^7.0.0",
     "@capacitor/core": "^7.0.0",
     "@capacitor/ios": "^7.0.0",
     "electron": "^35.0.0",
     "electron-builder": "^26.0.0"
+  },
+  "dependencies": {
+    "@capacitor/local-notifications": "^7.0.0"
   }
 }

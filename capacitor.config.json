@@ -8,5 +8,10 @@
   },
   "android": {
     "backgroundColor": "#f6f1e9"
+  },
+  "plugins": {
+    "LocalNotifications": {
+      "iconColor": "#176f76"
+    }
   }
 }

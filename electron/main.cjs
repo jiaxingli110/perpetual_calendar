@@ -9,6 +9,7 @@ function createWindow() {
     height: 820,
     minWidth: 360,
     minHeight: 640,
+    autoHideMenuBar: true,
     title: "万年历",
     backgroundColor: "#f6f1e9",
     icon: path.join(__dirname, "..", "icons", "icon-512.png"),
@@ -56,7 +57,7 @@ function createMenu() {
 }
 
 app.whenReady().then(() => {
-  createMenu();
+  Menu.setApplicationMenu(null);
   createWindow();
 
   app.on("activate", () => {
