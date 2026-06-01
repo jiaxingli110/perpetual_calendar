@@ -1,0 +1,131 @@
+<view class="page">
+  <view class="topbar">
+    <view>
+      <text class="eyebrow">Lunar Calendar</text>
+      <text class="title">万年历</text>
+    </view>
+    <button class="gear" bindtap="toggleSettings" aria-label="设置">设置</button>
+  </view>
+
+  <view class="month-card">
+    <view class="month-head">
+      <button class="nav-button" bindtap="prevYear">‹</button>
+      <view class="month-title">
+        <text>{{monthTitle}}</text>
+        <text class="month-meta">{{monthMeta}}</text>
+      </view>
+      <button class="nav-button" bindtap="nextYear">›</button>
+    </view>
+
+    <view class="controls">
+      <button class="control-button" bindtap="prevMonth">上月</button>
+      <picker mode="date" fields="month" value="{{pickerValue}}" start="1901-01" end="2100-12" bindchange="onMonthPick">
+        <view class="picker-button">选择月份</view>
+      </picker>
+      <button class="control-button primary" bindtap="goToday">今天</button>
+      <button class="control-button" bindtap="nextMonth">下月</button>
+    </view>
+
+    <view class="weekday-grid">
+      <text wx:for="{{weekdays}}" wx:key="*this">{{item}}</text>
+    </view>
+
+    <view class="calendar-grid">
+      <button
+        wx:for="{{calendarDays}}"
+        wx:key="key"
+        class="day-cell {{item.isCurrentMonth ? '' : 'muted'}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}} {{item.isHoliday ? 'holiday' : ''}}"
+        data-date="{{item.key}}"
+        bindtap="selectDate"
+      >
+        <text class="solar-day">{{item.day}}</text>
+        <text class="lunar-day">{{item.badge}}</text>
+        <text wx:if="{{item.mark}}" class="day-mark">{{item.mark}}</text>
+      </button>
+    </view>
+  </view>
+
+  <view wx:if="{{showSettings}}" class="settings-card">
+    <view class="section-title">
+      <text>组件</text>
+      <button bindtap="toggleSettings">关闭</button>
+    </view>
+    <view class="switch-row" wx:for="{{componentOptions}}" wx:key="key">
+      <text>{{item.label}}</text>
+      <switch checked="{{item.checked}}" data-key="{{item.key}}" bindchange="toggleComponent" color="#176f76" />
+    </view>
+  </view>
+
+  <view class="detail-card">
+    <view class="date-hero">
+      <text class="weekday">{{selected.weekday}}</text>
+      <text class="big-day">{{selected.day}}</text>
+      <text class="solar">{{selected.solar}}</text>
+      <text class="lunar">{{selected.lunar}}</text>
+      <view class="almanac">
+        <text>宜 {{selected.good}}</text>
+        <text>忌 {{selected.bad}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{components.today}}" class="info-section">
+      <text class="section-heading">今日信息</text>
+      <view class="info-row"><text>农历</text><text>{{selected.lunar}}</text></view>
+      <view class="info-row"><text>干支</text><text>{{selected.ganzhi}}</text></view>
+      <view class="info-row"><text>节日/节气</text><text>{{selected.festivals}}</text></view>
+    </view>
+
+    <view wx:if="{{components.events}}" class="info-section">
+      <text class="section-heading">本月节日</text>
+      <view wx:for="{{monthEvents}}" wx:key="key" class="event-item">
+        <text>{{item.day}}</text>
+        <text>{{item.name}}</text>
+      </view>
+    </view>
+
+    <view wx:if="{{components.recommendations}}" class="info-section">
+      <text class="section-heading">当季推荐</text>
+      <view class="recommend-grid">
+        <view wx:for="{{recommendations}}" wx:key="title" class="recommend-item">
+          <text>{{item.title}}</text>
+          <text>{{item.items}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view wx:if="{{components.todos}}" class="info-section">
+      <text class="section-heading">待办</text>
+      <view class="form-line">
+        <input placeholder="添加待办" value="{{todoText}}" bindinput="onTodoInput" />
+        <button bindtap="addTodo">添加</button>
+      </view>
+      <view wx:if="{{!todos.length}}" class="empty">今天还没有待办</view>
+      <view wx:for="{{todos}}" wx:key="id" class="todo-item">
+        <checkbox checked="{{item.done}}" data-id="{{item.id}}" bindtap="toggleTodo" />
+        <text class="{{item.done ? 'done' : ''}}">{{item.text}}</text>
+        <button data-id="{{item.id}}" bindtap="removeTodo">删除</button>
+      </view>
+    </view>
+
+    <view wx:if="{{components.anniversaries}}" class="info-section">
+      <text class="section-heading">纪念日</text>
+      <view class="form-line">
+        <input placeholder="纪念日名称" value="{{anniversaryName}}" bindinput="onAnniversaryInput" />
+        <button bindtap="addAnniversary">添加</button>
+      </view>
+      <view wx:if="{{!anniversaries.length}}" class="empty">选中日期暂无纪念日</view>
+      <view wx:for="{{anniversaries}}" wx:key="id" class="event-item">
+        <text>{{item.name}}</text>
+        <button data-id="{{item.id}}" bindtap="removeAnniversary">删除</button>
+      </view>
+    </view>
+
+    <view class="info-section">
+      <text class="section-heading">历史上的今天</text>
+      <view wx:for="{{historyItems}}" wx:key="year" class="history-item">
+        <text>{{item.year}}</text>
+        <text>{{item.text}}</text>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "perpetual-calendar-v32";
+const CACHE_NAME = "perpetual-calendar-v40";
 const ASSETS = [
   "./",
   "./index.html",
@@ -35,10 +35,24 @@ const ASSETS = [
   "./assets/solar-terms/dongzhi.jpg",
   "./assets/donate/alipay.jpg"
 ];
+const NETWORK_TIMEOUT_MS = 2500;
+
+function fetchWithTimeout(request) {
+  return Promise.race([
+    fetch(request),
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error("network timeout")), NETWORK_TIMEOUT_MS);
+    })
+  ]);
+}
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS)));
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.allSettled(ASSETS.map((asset) => cache.add(asset)))
+    )
+  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -51,8 +65,25 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
+  const requestUrl = new URL(event.request.url);
+  const isAppAsset = requestUrl.origin === self.location.origin;
+
+  if (isAppAsset) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetchWithTimeout(event.request).then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));
+          return response;
+        });
+      })
+    );
+    return;
+  }
+
   event.respondWith(
-    fetch(event.request)
+    fetchWithTimeout(event.request)
       .then((response) => {
         const copy = response.clone();
         caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy));

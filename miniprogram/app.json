@@ -1,0 +1,13 @@
+{
+  "pages": [
+    "pages/index/index"
+  ],
+  "window": {
+    "navigationBarTitleText": "万年历",
+    "navigationBarBackgroundColor": "#f7f1e7",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#eef4f1"
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents"
+}

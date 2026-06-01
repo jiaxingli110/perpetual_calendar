@@ -252,13 +252,15 @@ const defaultSettings = {
     events: true,
     redDays: true,
     recommendations: true,
-    todos: true
+    todos: true,
+    anniversaries: true
   },
   collapsed: {
     today: false,
     events: false,
     recommendations: false,
-    todos: false
+    todos: false,
+    anniversaries: false
   }
 };
 const DEFAULT_REMINDER_TIME = "08:00";
@@ -268,6 +270,7 @@ const state = {
   selected: new Date(),
   settings: loadSettings(),
   todos: loadTodos(),
+  anniversaries: loadAnniversaries(),
   reminderTimers: new Map()
 };
 
@@ -281,6 +284,7 @@ const elements = {
   selectedDay: document.querySelector("#selectedDay"),
   selectedSolar: document.querySelector("#selectedSolar"),
   selectedLunar: document.querySelector("#selectedLunar"),
+  almanacMini: document.querySelector("#almanacMini"),
   lunarDetail: document.querySelector("#lunarDetail"),
   ganzhiDetail: document.querySelector("#ganzhiDetail"),
   festivalDetail: document.querySelector("#festivalDetail"),
@@ -301,7 +305,18 @@ const elements = {
   todoDate: document.querySelector("#todoDate"),
   todoTime: document.querySelector("#todoTime"),
   todoReminder: document.querySelector("#todoReminder"),
-  todoList: document.querySelector("#todoList")
+  todoList: document.querySelector("#todoList"),
+  reminderToast: document.querySelector("#reminderToast"),
+  reminderToastText: document.querySelector("#reminderToastText"),
+  reminderToastClose: document.querySelector("#reminderToastClose"),
+  anniversaryForm: document.querySelector("#anniversaryForm"),
+  anniversaryName: document.querySelector("#anniversaryName"),
+  anniversarySolarDate: document.querySelector("#anniversarySolarDate"),
+  anniversaryLunarFields: document.querySelector("#anniversaryLunarFields"),
+  anniversaryLunarMonth: document.querySelector("#anniversaryLunarMonth"),
+  anniversaryLunarDay: document.querySelector("#anniversaryLunarDay"),
+  anniversaryList: document.querySelector("#anniversaryList"),
+  anniversaryTypeRadios: document.querySelectorAll('input[name="anniversaryType"]')
 };
 
 for (let month = 0; month < 12; month += 1) {
@@ -309,6 +324,20 @@ for (let month = 0; month < 12; month += 1) {
   option.value = String(month);
   option.textContent = `${month + 1}月`;
   elements.monthSelect.append(option);
+}
+
+for (let month = 1; month <= 12; month += 1) {
+  const option = document.createElement("option");
+  option.value = String(month);
+  option.textContent = `${lunarMonths[month - 1]}月`;
+  elements.anniversaryLunarMonth.append(option);
+}
+
+for (let day = 1; day <= 30; day += 1) {
+  const option = document.createElement("option");
+  option.value = String(day);
+  option.textContent = lunarDays[day - 1];
+  elements.anniversaryLunarDay.append(option);
 }
 
 function pad(value) {
@@ -359,6 +388,18 @@ function loadTodos() {
 
 function saveTodos() {
   localStorage.setItem("calendarTodos", JSON.stringify(state.todos));
+}
+
+function loadAnniversaries() {
+  try {
+    return JSON.parse(localStorage.getItem("calendarAnniversaries") || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveAnniversaries() {
+  localStorage.setItem("calendarAnniversaries", JSON.stringify(state.anniversaries));
 }
 
 function leapMonth(year) {
@@ -480,7 +521,7 @@ function getFestivals(date, lunar) {
 
   if (legalHoliday) events.push({ type: "legal", name: `法定·${legalHoliday}` });
   if (adjustedWorkday) events.push({ type: "workday", name: adjustedWorkday });
-  if (solar) events.push({ type: "festival", name: solar });
+  if (solar && solar !== legalHoliday) events.push({ type: "festival", name: solar });
   if (observance) events.push({ type: "observance", name: observance });
   if (lunar && !lunar.isLeap) {
     const lunarEvent = lunarFestivals[monthKey(lunar.month, lunar.day)];
@@ -623,6 +664,25 @@ function todosForDate(date) {
   return state.todos.filter((todo) => todo.date === key);
 }
 
+function anniversariesForDate(date) {
+  const lunar = toLunar(date);
+  const solarMonth = date.getMonth() + 1;
+  const solarDay = date.getDate();
+  return state.anniversaries.filter((item) => {
+    if (item.type === "solar") {
+      return Number(item.month) === solarMonth && Number(item.day) === solarDay;
+    }
+    return lunar && !lunar.isLeap && Number(item.month) === lunar.month && Number(item.day) === lunar.day;
+  });
+}
+
+function anniversaryDateLabel(item) {
+  if (item.type === "lunar") {
+    return `阴历 ${lunarMonths[Number(item.month) - 1]}月${lunarDays[Number(item.day) - 1]}`;
+  }
+  return `阳历 ${Number(item.month)}月${Number(item.day)}日`;
+}
+
 function clampYear(year) {
   return Math.min(2100, Math.max(1901, year));
 }
@@ -662,6 +722,7 @@ function renderCalendar() {
     const events = getFestivals(date, lunar);
     const term = getSolarTerm(date);
     const todos = todosForDate(date);
+    const anniversaries = state.settings.components.anniversaries !== false ? anniversariesForDate(date) : [];
     const button = document.createElement("button");
     button.className = "day-cell";
     button.type = "button";
@@ -673,6 +734,7 @@ function renderCalendar() {
     if (date.getDay() === 0 || date.getDay() === 6) button.classList.add("is-weekend");
     if (events.some((event) => event.type === "legal")) button.classList.add("is-legal-holiday");
     if (events.some((event) => event.type === "japan")) button.classList.add("is-japan-holiday");
+    if (anniversaries.length) button.classList.add("is-anniversary");
     if (sameDay(date, today)) button.classList.add("is-today");
     if (sameDay(date, state.selected)) button.classList.add("is-selected");
     if (termVisuals[term]?.[2]) {
@@ -700,6 +762,12 @@ function renderCalendar() {
       tag.textContent = `${todos.filter((todo) => !todo.done).length || todos.length}项待办`;
       tags.append(tag);
     }
+    for (const item of anniversaries.slice(0, 2)) {
+      const tag = document.createElement("span");
+      tag.className = "tag anniversary";
+      tag.textContent = `纪念·${item.name}`;
+      tags.append(tag);
+    }
 
     button.addEventListener("click", () => selectDate(date));
     elements.calendarGrid.append(button);
@@ -710,6 +778,7 @@ function renderDetails() {
   const date = state.selected;
   const lunar = toLunar(date);
   const events = getFestivals(date, lunar);
+  const anniversaries = state.settings.components.anniversaries !== false ? anniversariesForDate(date) : [];
 
   elements.selectedWeekday.textContent = weekNames[date.getDay()];
   elements.selectedDay.textContent = String(date.getDate());
@@ -717,8 +786,36 @@ function renderDetails() {
   elements.selectedLunar.textContent = lunar ? `农历 ${lunarFullName(lunar)}` : "农历数据暂支持 1901-2100 年";
   elements.lunarDetail.textContent = lunar ? `${ganzhiYear(lunar.year)}年 ${lunarFullName(lunar)}` : "超出农历数据范围";
   elements.ganzhiDetail.textContent = `${ganzhiYear(date.getFullYear())}年 ${ganzhiMonth(date.getFullYear(), date.getMonth() + 1)}月 ${ganzhiDay(date)}日`;
-  elements.festivalDetail.textContent = events.length ? events.map((event) => event.name).join("、") : "无";
+  elements.festivalDetail.textContent = [...events.map((event) => event.name), ...anniversaries.map((item) => `纪念·${item.name}`)].join("、") || "无";
+  renderAlmanac(date);
   elements.todoDate.value = dateKey(date);
+  elements.anniversarySolarDate.value = dateKey(date);
+  if (lunar) {
+    elements.anniversaryLunarMonth.value = String(lunar.month);
+    elements.anniversaryLunarDay.value = String(lunar.day);
+  }
+}
+
+function getAlmanacAdvice(date) {
+  const seed = Number(`${date.getFullYear()}${pad(date.getMonth() + 1)}${pad(date.getDate())}`);
+  const sets = [
+    { good: ["嫁娶", "订盟", "纳采"], bad: ["安葬", "破土"] },
+    { good: ["祭祀", "祈福", "出行"], bad: ["嫁娶", "入宅"] },
+    { good: ["安葬", "修坟", "破土"], bad: ["嫁娶", "开市"] },
+    { good: ["嫁娶", "入宅", "宴请"], bad: ["安葬", "动土"] },
+    { good: ["解除", "扫舍", "沐浴"], bad: ["嫁娶", "安葬"] },
+    { good: ["纳财", "开市", "会友"], bad: ["丧葬", "远行"] }
+  ];
+  return sets[seed % sets.length];
+}
+
+function renderAlmanac(date) {
+  const advice = getAlmanacAdvice(date);
+  elements.almanacMini.innerHTML = `
+    <strong>今日宜忌</strong>
+    <div><span>宜</span><p>${advice.good.join(" · ")}</p></div>
+    <div><span>忌</span><p>${advice.bad.join(" · ")}</p></div>
+  `;
 }
 
 function renderMonthEvents() {
@@ -906,6 +1003,36 @@ function renderTodos() {
   }
 }
 
+function renderAnniversaries() {
+  const matched = anniversariesForDate(state.selected);
+  elements.anniversaryList.replaceChildren();
+
+  if (!matched.length) {
+    const empty = document.createElement("li");
+    empty.className = "anniversary-empty";
+    empty.textContent = "这一天还没有纪念日";
+    elements.anniversaryList.append(empty);
+    return;
+  }
+
+  for (const item of matched) {
+    const li = document.createElement("li");
+    li.innerHTML = `
+      <span>
+        <strong>${item.name}</strong>
+        <small>${anniversaryDateLabel(item)} · 每年提醒</small>
+      </span>
+      <button type="button" aria-label="删除纪念日">×</button>
+    `;
+    li.querySelector("button").addEventListener("click", () => {
+      state.anniversaries = state.anniversaries.filter((current) => current.id !== item.id);
+      saveAnniversaries();
+      render();
+    });
+    elements.anniversaryList.append(li);
+  }
+}
+
 function getReminderTime(todo) {
   return todo.time || DEFAULT_REMINDER_TIME;
 }
@@ -916,6 +1043,10 @@ function getReminderDue(todo) {
 
 function getNativeLocalNotifications() {
   return window.Capacitor?.Plugins?.LocalNotifications || null;
+}
+
+function canUseElectronNotifications() {
+  return typeof window.calendarBridge?.notifyReminder === "function";
 }
 
 function notificationId(todo) {
@@ -952,11 +1083,42 @@ async function cancelNativeTodos(todos) {
 }
 
 function notifyTodo(todo) {
-  if (!("Notification" in window) || Notification.permission !== "granted") return;
-  new Notification("万年历待办提醒", {
-    body: `${getReminderTime(todo)} · ${todo.text}`,
-    tag: todo.id
-  });
+  if (canUseElectronNotifications()) {
+    window.calendarBridge.notifyReminder({ ...todo, time: getReminderTime(todo) }).catch(() => {});
+  } else if ("Notification" in window && Notification.permission === "granted") {
+    new Notification("万年历待办提醒", {
+      body: `${getReminderTime(todo)} · ${todo.text}`,
+      tag: todo.id
+    });
+  }
+  playReminderSound();
+  showReminderToast(todo);
+}
+
+function playReminderSound() {
+  const AudioContext = window.AudioContext || window.webkitAudioContext;
+  if (!AudioContext) return;
+  const context = new AudioContext();
+  const gain = context.createGain();
+  gain.gain.setValueAtTime(0.0001, context.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.18, context.currentTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, context.currentTime + 0.7);
+  gain.connect(context.destination);
+
+  for (const [index, frequency] of [660, 880].entries()) {
+    const oscillator = context.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.value = frequency;
+    oscillator.connect(gain);
+    oscillator.start(context.currentTime + index * 0.18);
+    oscillator.stop(context.currentTime + 0.42 + index * 0.18);
+  }
+  setTimeout(() => context.close().catch(() => {}), 900);
+}
+
+function showReminderToast(todo) {
+  elements.reminderToast.hidden = false;
+  elements.reminderToastText.textContent = `${getReminderTime(todo)} · ${todo.text}`;
 }
 
 function scheduleReminders() {
@@ -1008,6 +1170,7 @@ function render() {
   renderMonthEvents();
   renderSeasonRecommendations();
   renderTodos();
+  renderAnniversaries();
   renderHistory();
   applyComponentSettings();
 }
@@ -1047,10 +1210,11 @@ function handleComponentToggle(event) {
     state.settings.showJapanHolidays = toggle.checked;
   }
   saveSettings();
-  if (key === "redDays") {
+  if (key === "redDays" || key === "anniversaries") {
     renderCalendar();
     renderDetails();
     renderMonthEvents();
+    renderAnniversaries();
     return;
   }
   setComponentVisibility(key, toggle.checked);
@@ -1094,6 +1258,53 @@ elements.todoForm.addEventListener("submit", async (event) => {
   scheduleReminders();
   render();
 });
+elements.reminderToastClose.addEventListener("click", () => {
+  elements.reminderToast.hidden = true;
+});
+
+function selectedAnniversaryType() {
+  return [...elements.anniversaryTypeRadios].find((radio) => radio.checked)?.value || "solar";
+}
+
+function syncAnniversaryFields() {
+  const isLunar = selectedAnniversaryType() === "lunar";
+  elements.anniversarySolarDate.hidden = isLunar;
+  elements.anniversaryLunarFields.hidden = !isLunar;
+}
+
+for (const radio of elements.anniversaryTypeRadios) {
+  radio.addEventListener("change", syncAnniversaryFields);
+}
+
+elements.anniversaryForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  const name = elements.anniversaryName.value.trim();
+  if (!name) return;
+
+  const type = selectedAnniversaryType();
+  let month;
+  let day;
+  if (type === "lunar") {
+    month = Number(elements.anniversaryLunarMonth.value);
+    day = Number(elements.anniversaryLunarDay.value);
+  } else {
+    const date = new Date(`${elements.anniversarySolarDate.value || dateKey(state.selected)}T00:00:00`);
+    month = date.getMonth() + 1;
+    day = date.getDate();
+  }
+
+  state.anniversaries.push({
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    name,
+    type,
+    month,
+    day
+  });
+  elements.anniversaryName.value = "";
+  saveAnniversaries();
+  render();
+});
+syncAnniversaryFields();
 
 function isLocalPreview() {
   return location.protocol === "file:" || ["localhost", "127.0.0.1", "::1"].includes(location.hostname);
@@ -1119,3 +1330,4 @@ if ("serviceWorker" in navigator) {
 
 scheduleReminders();
 selectDate(new Date());
+document.body.classList.add("is-ready");

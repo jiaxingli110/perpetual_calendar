@@ -5,3 +5,4 @@ ios/
 www/
 *.log
 assets/solar-terms/*.png
+miniprogram/upload-info.json

@@ -10,9 +10,13 @@
     <title>万年历</title>
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="icons/icon-192.png" />
-    <link rel="stylesheet" href="styles.css?v=20260530-19" />
+    <link rel="stylesheet" href="styles.css?v=20260531-7" />
   </head>
   <body>
+    <div class="boot-status" id="bootStatus" role="status">
+      <strong>万年历正在启动</strong>
+      <span>基础日历数据都在本地，离线也可以打开。</span>
+    </div>
     <div class="app-shell">
       <header class="topbar">
         <div>
@@ -103,6 +107,7 @@
                   <label><input type="checkbox" data-component-toggle="redDays" /> 红日子</label>
                   <label><input type="checkbox" data-component-toggle="recommendations" /> 当季推荐</label>
                   <label><input type="checkbox" data-component-toggle="todos" /> 待办提醒</label>
+                  <label><input type="checkbox" data-component-toggle="anniversaries" /> 纪念日</label>
                 </div>
               </div>
               <div class="settings-subpage donate-page" data-settings-panel="donate">
@@ -131,6 +136,7 @@
             <div class="selected-day" id="selectedDay"></div>
             <h2 id="selectedSolar"></h2>
             <p id="selectedLunar"></p>
+            <div class="almanac-mini" id="almanacMini" aria-label="婚丧嫁娶提示"></div>
           </section>
 
           <section class="info-section" data-component="today">
@@ -189,10 +195,40 @@
             </form>
             <ul class="todo-list collapsible-body" id="todoList"></ul>
           </section>
+
+          <section class="info-section" data-component="anniversaries">
+            <button class="section-toggle" type="button" data-collapse-toggle="anniversaries" aria-expanded="true">
+              <span>纪念日</span>
+              <span aria-hidden="true">⌄</span>
+            </button>
+            <form class="anniversary-form collapsible-body" id="anniversaryForm">
+              <input id="anniversaryName" type="text" placeholder="纪念日名称" autocomplete="off" />
+              <div class="anniversary-type" role="radiogroup" aria-label="纪念日类型">
+                <label><input type="radio" name="anniversaryType" value="solar" checked /> 阳历</label>
+                <label><input type="radio" name="anniversaryType" value="lunar" /> 阴历</label>
+              </div>
+              <div class="anniversary-fields">
+                <input id="anniversarySolarDate" type="date" />
+                <div class="lunar-date-fields" id="anniversaryLunarFields" hidden>
+                  <select id="anniversaryLunarMonth" aria-label="阴历月份"></select>
+                  <select id="anniversaryLunarDay" aria-label="阴历日期"></select>
+                </div>
+              </div>
+              <button class="todo-add" type="submit">添加纪念日</button>
+            </form>
+            <ul class="anniversary-list collapsible-body" id="anniversaryList"></ul>
+          </section>
         </aside>
       </main>
     </div>
+    <div class="reminder-toast" id="reminderToast" role="status" aria-live="polite" hidden>
+      <div>
+        <strong>待办提醒</strong>
+        <span id="reminderToastText"></span>
+      </div>
+      <button id="reminderToastClose" type="button" aria-label="关闭提醒">×</button>
+    </div>
 
-    <script src="app.js?v=20260530-19" defer></script>
+    <script src="app.js?v=20260531-7" defer></script>
   </body>
 </html>

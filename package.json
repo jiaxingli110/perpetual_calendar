@@ -12,7 +12,8 @@
     "cap:add:android": "npm run prepare:web && cap add android",
     "cap:add:ios": "npm run prepare:web && cap add ios",
     "cap:android": "npm run prepare:web && cap sync android",
-    "cap:ios": "npm run prepare:web && cap sync ios"
+    "cap:ios": "npm run prepare:web && cap sync ios",
+    "wechat:upload": "node scripts/wechat-upload.cjs"
   },
   "build": {
     "appId": "com.example.perpetualcalendar",

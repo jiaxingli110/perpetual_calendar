@@ -1,0 +1,26 @@
+{
+  "description": "万年历微信小程序",
+  "packOptions": {
+    "ignore": []
+  },
+  "setting": {
+    "urlCheck": true,
+    "es6": true,
+    "enhance": true,
+    "postcss": true,
+    "minified": true,
+    "coverView": true,
+    "nodeModules": false,
+    "autoAudits": false,
+    "uglifyFileName": false
+  },
+  "compileType": "miniprogram",
+  "libVersion": "3.8.0",
+  "appid": "wxab429af0db8e34db",
+  "projectname": "perpetual-calendar",
+  "condition": {},
+  "editorSetting": {
+    "tabIndent": "insertSpaces",
+    "tabSize": 2
+  }
+}
