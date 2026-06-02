@@ -1,5 +1,7 @@
-const { app, BrowserWindow, Menu, Notification, ipcMain, shell } = require("electron");
+const { app, BrowserWindow, Menu, Notification, ipcMain, shell, dialog } = require("electron");
 const path = require("node:path");
+const fs = require("node:fs/promises");
+const { pathToFileURL } = require("node:url");
 
 const isMac = process.platform === "darwin";
 
@@ -81,6 +83,81 @@ function showReminderNotification(todo) {
   return true;
 }
 
+function defaultDiaryDirectory() {
+  return path.join(app.getPath("documents"), "万年历日记文件");
+}
+
+async function ensureDirectory(directory) {
+  const target = directory || defaultDiaryDirectory();
+  await fs.mkdir(target, { recursive: true });
+  return target;
+}
+
+function diaryFileType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  if ([".jpg", ".jpeg", ".png", ".gif", ".webp", ".bmp", ".avif"].includes(ext)) {
+    return `image/${ext.replace(".", "").replace("jpg", "jpeg")}`;
+  }
+  if ([".mp4", ".webm", ".ogg", ".ogv", ".mov", ".m4v"].includes(ext)) {
+    if (ext === ".ogv") return "video/ogg";
+    return `video/${ext.replace(".", "").replace("mov", "quicktime").replace("m4v", "mp4")}`;
+  }
+  return "application/octet-stream";
+}
+
+async function uniqueTargetPath(directory, fileName) {
+  const parsed = path.parse(fileName);
+  let target = path.join(directory, fileName);
+  let index = 1;
+  while (true) {
+    try {
+      await fs.access(target);
+      target = path.join(directory, `${parsed.name}-${index}${parsed.ext}`);
+      index += 1;
+    } catch {
+      return target;
+    }
+  }
+}
+
+async function chooseDiaryDirectory(currentPath) {
+  const result = await dialog.showOpenDialog({
+    title: "选择日记文件地址",
+    defaultPath: currentPath || defaultDiaryDirectory(),
+    properties: ["openDirectory", "createDirectory"]
+  });
+  if (result.canceled || !result.filePaths[0]) return { path: "" };
+  const directory = await ensureDirectory(result.filePaths[0]);
+  return { path: directory };
+}
+
+async function importDiaryFiles(directory) {
+  const targetDirectory = await ensureDirectory(directory);
+  const result = await dialog.showOpenDialog({
+    title: "选择日记图片或文件",
+    properties: ["openFile", "multiSelections"]
+  });
+  if (result.canceled || !result.filePaths.length) {
+    return { directory: targetDirectory, files: [] };
+  }
+
+  const files = [];
+  for (const sourcePath of result.filePaths) {
+    const stats = await fs.stat(sourcePath);
+    if (!stats.isFile()) continue;
+    const targetPath = await uniqueTargetPath(targetDirectory, path.basename(sourcePath));
+    await fs.copyFile(sourcePath, targetPath);
+    files.push({
+      name: path.basename(targetPath),
+      path: targetPath,
+      url: pathToFileURL(targetPath).toString(),
+      size: stats.size,
+      type: diaryFileType(targetPath)
+    });
+  }
+  return { directory: targetDirectory, files };
+}
+
 function createMenu() {
   const template = [
     ...(isMac
@@ -114,6 +191,8 @@ function createMenu() {
 app.whenReady().then(() => {
   Menu.setApplicationMenu(null);
   ipcMain.handle("calendar:reminder", (_event, todo) => showReminderNotification(todo));
+  ipcMain.handle("calendar:diary:choose-directory", (_event, currentPath) => chooseDiaryDirectory(currentPath));
+  ipcMain.handle("calendar:diary:import-files", (_event, directory) => importDiaryFiles(directory));
   createWindow();
 
   app.on("activate", () => {

@@ -98,6 +98,10 @@
                   <span>捐赠</span>
                   <span aria-hidden="true">›</span>
                 </button>
+                <button type="button" data-settings-page="diary">
+                  <span>日记</span>
+                  <span aria-hidden="true">›</span>
+                </button>
               </div>
               <div class="settings-subpage is-active" data-settings-panel="components">
                 <div class="settings-subtitle">组件</div>
@@ -127,6 +131,14 @@
                     <dd>471075887@qq.com</dd>
                   </div>
                 </dl>
+              </div>
+              <div class="settings-subpage" data-settings-panel="diary">
+                <div class="settings-subtitle">日记文件地址</div>
+                <div class="diary-path-setting">
+                  <input id="diaryFilesPath" type="text" placeholder="默认保存在应用本地日记文件夹" readonly />
+                  <button id="chooseDiaryPath" type="button">选择文件夹</button>
+                </div>
+                <p class="settings-note">上传的图片和文件会复制到这里；删除或清空日记只移除记录，不会删除本地文件。</p>
               </div>
             </div>
           </div>
@@ -220,6 +232,103 @@
           </section>
         </aside>
       </main>
+      <button class="diary-float-button" id="diaryFloatButton" type="button" title="打开日记" aria-label="打开日记">
+        <span aria-hidden="true">›</span>
+      </button>
+
+      <main class="diary-page" id="diaryPage" hidden>
+        <button class="diary-back-float" id="backToCalendar" type="button" title="返回日历" aria-label="返回日历">
+          <span aria-hidden="true">‹</span>
+        </button>
+        <section class="diary-list-panel" aria-label="已记录的日记">
+          <div class="diary-page-head">
+            <div>
+              <h2>日记</h2>
+              <p id="diaryDateLabel"></p>
+            </div>
+            <button class="diary-all-button" id="diaryAllButton" type="button" title="全部日记" aria-label="全部日记">
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+          <div class="diary-date-picker">
+            <label>
+              <span>日期</span>
+              <input id="diaryDate" type="date" />
+            </label>
+            <button id="newDiaryEntry" type="button">新记事</button>
+          </div>
+          <ul class="diary-entry-list" id="diaryEntryList"></ul>
+          <button class="diary-clear" id="clearDiaries" type="button">清空日记</button>
+        </section>
+
+        <section class="diary-editor-panel" aria-label="编辑日记">
+          <div class="diary-editor-head">
+            <div>
+              <strong id="diaryEditorTitle">新日记</strong>
+              <span id="diaryEditorMeta">可以为同一天记录多段</span>
+            </div>
+          </div>
+          <div class="diary-toolbar" aria-label="日记编辑工具">
+            <button type="button" data-diary-command="bold" title="加粗" aria-label="加粗">B</button>
+            <button type="button" data-diary-command="italic" title="斜体" aria-label="斜体">I</button>
+            <button type="button" data-diary-command="underline" title="下划线" aria-label="下划线">U</button>
+            <select id="diaryFontSize" aria-label="字号">
+              <option value="">字号</option>
+              <option value="3">正文</option>
+              <option value="4">稍大</option>
+              <option value="5">标题</option>
+              <option value="6">大标题</option>
+            </select>
+          </div>
+          <div class="diary-editor" id="diaryEditor" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="写下这一段发生了什么..."></div>
+          <div class="diary-attachments">
+            <div class="diary-attachments-head">
+              <strong>图片和文件</strong>
+              <button id="addDiaryFiles" type="button">上传文件</button>
+            </div>
+            <ul id="diaryAttachmentList"></ul>
+          </div>
+          <div class="diary-editor-actions">
+            <button id="deleteDiaryEntry" type="button">删除</button>
+            <button id="saveDiaryEntry" type="button">保存</button>
+          </div>
+        </section>
+
+        <section class="diary-all-panel" id="diaryAllPanel" aria-label="全部日记" hidden>
+          <div class="diary-all-head">
+            <div>
+              <strong>全部日记</strong>
+              <span id="allDiaryMeta">按时间倒序排列</span>
+            </div>
+            <button id="backToDayDiary" type="button">返回当天</button>
+          </div>
+          <div class="diary-all-tools">
+            <label>
+              <input id="selectAllDiaries" type="checkbox" />
+              <span>全选</span>
+            </label>
+            <div class="diary-all-filters">
+              <select id="allDiaryYear" aria-label="按年份筛选">
+                <option value="">全部年份</option>
+              </select>
+              <select id="allDiaryMonth" aria-label="按月份筛选">
+                <option value="">全部月份</option>
+              </select>
+            </div>
+            <span id="selectedDiaryCount">已选 0 条</span>
+            <button id="deleteSelectedDiaries" type="button">删除所选</button>
+          </div>
+          <ul class="diary-all-list" id="diaryAllList"></ul>
+          <div class="diary-all-pager">
+            <button id="prevDiaryPage" type="button">上一页</button>
+            <span id="diaryPageInfo">第 1 / 1 页</span>
+            <button id="nextDiaryPage" type="button">下一页</button>
+          </div>
+        </section>
+      </main>
     </div>
     <div class="reminder-toast" id="reminderToast" role="status" aria-live="polite" hidden>
       <div>
@@ -227,6 +336,26 @@
         <span id="reminderToastText"></span>
       </div>
       <button id="reminderToastClose" type="button" aria-label="关闭提醒">×</button>
+    </div>
+    <div class="diary-dialog" id="clearDiaryDialog" role="dialog" aria-modal="true" aria-labelledby="clearDiaryTitle" hidden>
+      <div class="diary-dialog-card">
+        <strong id="clearDiaryTitle">清空日记</strong>
+        <p>确定清空全部日记记录吗？本地图片和文件不会删除。</p>
+        <div>
+          <button id="cancelClearDiaries" type="button">取消</button>
+          <button id="confirmClearDiaries" type="button">清空</button>
+        </div>
+      </div>
+    </div>
+    <div class="diary-dialog" id="deleteSelectedDiaryDialog" role="dialog" aria-modal="true" aria-labelledby="deleteSelectedDiaryTitle" hidden>
+      <div class="diary-dialog-card">
+        <strong id="deleteSelectedDiaryTitle">删除所选日记</strong>
+        <p id="deleteSelectedDiaryMessage">确定删除选中的日记记录吗？本地图片和文件不会删除。</p>
+        <div>
+          <button id="cancelDeleteSelectedDiaries" type="button">取消</button>
+          <button id="confirmDeleteSelectedDiaries" type="button">删除</button>
+        </div>
+      </div>
     </div>
 
     <script src="app.js?v=20260531-7" defer></script>

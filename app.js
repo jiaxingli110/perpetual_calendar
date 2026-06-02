@@ -261,20 +261,36 @@ const defaultSettings = {
     recommendations: false,
     todos: false,
     anniversaries: false
-  }
+  },
+  diaryFilesPath: ""
 };
 const DEFAULT_REMINDER_TIME = "08:00";
 
 const state = {
+  page: "calendar",
+  pageTransition: "",
   view: new Date(),
   selected: new Date(),
   settings: loadSettings(),
   todos: loadTodos(),
   anniversaries: loadAnniversaries(),
+  diaries: loadDiaries(),
+  diaryDate: new Date(),
+  diaryMode: "day",
+  editingDiaryId: "",
+  editingAttachments: [],
+  selectedDiaryIds: new Set(),
+  allDiaryYear: "",
+  allDiaryMonth: "",
+  allDiaryPage: 1,
+  allDiaryPageSize: 24,
   reminderTimers: new Map()
 };
 
 const elements = {
+  topbar: document.querySelector(".topbar"),
+  calendarLayout: document.querySelector(".layout"),
+  diaryPage: document.querySelector("#diaryPage"),
   calendarGrid: document.querySelector("#calendarGrid"),
   monthTitle: document.querySelector("#monthTitle"),
   monthMeta: document.querySelector("#monthMeta"),
@@ -296,6 +312,8 @@ const elements = {
   settingsClose: document.querySelector("#settingsClose"),
   settingsPageButtons: document.querySelectorAll("[data-settings-page]"),
   settingsPanels: document.querySelectorAll("[data-settings-panel]"),
+  diaryFilesPath: document.querySelector("#diaryFilesPath"),
+  chooseDiaryPath: document.querySelector("#chooseDiaryPath"),
   componentToggles: document.querySelectorAll("[data-component-toggle]"),
   componentSections: document.querySelectorAll("[data-component]"),
   collapseToggles: document.querySelectorAll("[data-collapse-toggle]"),
@@ -316,7 +334,43 @@ const elements = {
   anniversaryLunarMonth: document.querySelector("#anniversaryLunarMonth"),
   anniversaryLunarDay: document.querySelector("#anniversaryLunarDay"),
   anniversaryList: document.querySelector("#anniversaryList"),
-  anniversaryTypeRadios: document.querySelectorAll('input[name="anniversaryType"]')
+  anniversaryTypeRadios: document.querySelectorAll('input[name="anniversaryType"]'),
+  diaryFloatButton: document.querySelector("#diaryFloatButton"),
+  backToCalendar: document.querySelector("#backToCalendar"),
+  diaryDate: document.querySelector("#diaryDate"),
+  diaryDateLabel: document.querySelector("#diaryDateLabel"),
+  diaryAllButton: document.querySelector("#diaryAllButton"),
+  diaryEntryList: document.querySelector("#diaryEntryList"),
+  newDiaryEntry: document.querySelector("#newDiaryEntry"),
+  clearDiaries: document.querySelector("#clearDiaries"),
+  diaryEditorTitle: document.querySelector("#diaryEditorTitle"),
+  diaryEditorMeta: document.querySelector("#diaryEditorMeta"),
+  diaryEditor: document.querySelector("#diaryEditor"),
+  diaryFontSize: document.querySelector("#diaryFontSize"),
+  diaryCommandButtons: document.querySelectorAll("[data-diary-command]"),
+  addDiaryFiles: document.querySelector("#addDiaryFiles"),
+  diaryAttachmentList: document.querySelector("#diaryAttachmentList"),
+  deleteDiaryEntry: document.querySelector("#deleteDiaryEntry"),
+  saveDiaryEntry: document.querySelector("#saveDiaryEntry"),
+  diaryAllPanel: document.querySelector("#diaryAllPanel"),
+  backToDayDiary: document.querySelector("#backToDayDiary"),
+  allDiaryMeta: document.querySelector("#allDiaryMeta"),
+  selectAllDiaries: document.querySelector("#selectAllDiaries"),
+  allDiaryYear: document.querySelector("#allDiaryYear"),
+  allDiaryMonth: document.querySelector("#allDiaryMonth"),
+  selectedDiaryCount: document.querySelector("#selectedDiaryCount"),
+  deleteSelectedDiaries: document.querySelector("#deleteSelectedDiaries"),
+  diaryAllList: document.querySelector("#diaryAllList"),
+  prevDiaryPage: document.querySelector("#prevDiaryPage"),
+  nextDiaryPage: document.querySelector("#nextDiaryPage"),
+  diaryPageInfo: document.querySelector("#diaryPageInfo"),
+  clearDiaryDialog: document.querySelector("#clearDiaryDialog"),
+  cancelClearDiaries: document.querySelector("#cancelClearDiaries"),
+  confirmClearDiaries: document.querySelector("#confirmClearDiaries"),
+  deleteSelectedDiaryDialog: document.querySelector("#deleteSelectedDiaryDialog"),
+  deleteSelectedDiaryMessage: document.querySelector("#deleteSelectedDiaryMessage"),
+  cancelDeleteSelectedDiaries: document.querySelector("#cancelDeleteSelectedDiaries"),
+  confirmDeleteSelectedDiaries: document.querySelector("#confirmDeleteSelectedDiaries")
 };
 
 for (let month = 0; month < 12; month += 1) {
@@ -400,6 +454,19 @@ function loadAnniversaries() {
 
 function saveAnniversaries() {
   localStorage.setItem("calendarAnniversaries", JSON.stringify(state.anniversaries));
+}
+
+function loadDiaries() {
+  try {
+    const diaries = JSON.parse(localStorage.getItem("calendarDiaries") || "[]");
+    return Array.isArray(diaries) ? diaries : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveDiaries() {
+  localStorage.setItem("calendarDiaries", JSON.stringify(state.diaries));
 }
 
 function leapMonth(year) {
@@ -664,6 +731,13 @@ function todosForDate(date) {
   return state.todos.filter((todo) => todo.date === key);
 }
 
+function diariesForDate(date) {
+  const key = dateKey(date);
+  return state.diaries
+    .filter((entry) => entry.date === key)
+    .sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
+}
+
 function anniversariesForDate(date) {
   const lunar = toLunar(date);
   const solarMonth = date.getMonth() + 1;
@@ -722,6 +796,7 @@ function renderCalendar() {
     const events = getFestivals(date, lunar);
     const term = getSolarTerm(date);
     const todos = todosForDate(date);
+    const diaryEntries = diariesForDate(date);
     const anniversaries = state.settings.components.anniversaries !== false ? anniversariesForDate(date) : [];
     const button = document.createElement("button");
     button.className = "day-cell";
@@ -735,6 +810,7 @@ function renderCalendar() {
     if (events.some((event) => event.type === "legal")) button.classList.add("is-legal-holiday");
     if (events.some((event) => event.type === "japan")) button.classList.add("is-japan-holiday");
     if (anniversaries.length) button.classList.add("is-anniversary");
+    if (diaryEntries.length) button.classList.add("has-diary");
     if (sameDay(date, today)) button.classList.add("is-today");
     if (sameDay(date, state.selected)) button.classList.add("is-selected");
     if (termVisuals[term]?.[2]) {
@@ -746,6 +822,7 @@ function renderCalendar() {
       <span class="solar">${date.getDate()}</span>
       <span class="lunar">${lunar ? lunarDayName(lunar) : ""}</span>
       ${termVisuals[term]?.[0] ? `<span class="term-art" title="${termVisuals[term][1]}">${termVisuals[term][0]}</span>` : ""}
+      <span class="diary-dot" aria-hidden="true">D</span>
       <span class="tags"></span>
     `;
 
@@ -1033,6 +1110,449 @@ function renderAnniversaries() {
   }
 }
 
+function diaryDateLabel(date) {
+  return `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日 · ${weekNames[date.getDay()]}`;
+}
+
+function diaryEntryTitle(entry) {
+  const text = (entry.text || "").trim();
+  if (text) return text.slice(0, 18);
+  if (entry.attachments?.length) return `${entry.attachments.length} 个附件`;
+  return "未命名日记";
+}
+
+function diaryEntryMeta(entry) {
+  const time = new Date(entry.updatedAt || entry.createdAt || Date.now()).toLocaleTimeString("zh-CN", {
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+  const fileCount = entry.attachments?.length || 0;
+  return fileCount ? `${time} · ${fileCount} 个文件` : time;
+}
+
+function setDiaryEditorContent(entry) {
+  if (entry?.content) {
+    elements.diaryEditor.innerHTML = entry.content;
+    return;
+  }
+  elements.diaryEditor.textContent = entry?.text || "";
+}
+
+function getDiaryEditorText() {
+  return elements.diaryEditor.innerText.trim();
+}
+
+function getDiaryEditorContent() {
+  return elements.diaryEditor.innerHTML.trim();
+}
+
+function setDiaryDate(date) {
+  state.diaryDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  state.view = new Date(date.getFullYear(), date.getMonth(), 1);
+  state.selected = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function beginNewDiaryEntry() {
+  state.diaryMode = "day";
+  state.editingDiaryId = "";
+  state.editingAttachments = [];
+  elements.diaryEditor.innerHTML = "";
+  renderDiary();
+  elements.diaryEditor.focus();
+}
+
+function openDiaryPage(date = new Date()) {
+  setDiaryDate(date);
+  state.page = "diary";
+  state.pageTransition = "to-diary";
+  state.diaryMode = "day";
+  const entries = diariesForDate(state.diaryDate);
+  state.editingDiaryId = entries[0]?.id || "";
+  state.editingAttachments = state.editingDiaryId ? [...(entries[0].attachments || [])] : [];
+  render();
+  window.setTimeout(() => {
+    state.pageTransition = "";
+    renderPage();
+    elements.diaryEditor.focus();
+  }, 620);
+}
+
+function openCalendarPage() {
+  state.pageTransition = "to-calendar";
+  renderPage();
+  window.setTimeout(() => {
+    state.page = "calendar";
+    state.pageTransition = "";
+    render();
+  }, 560);
+}
+
+function currentDiaryEntry() {
+  return state.diaries.find((entry) => entry.id === state.editingDiaryId);
+}
+
+function sortedDiaries() {
+  return [...state.diaries].sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+}
+
+function diaryDays() {
+  const grouped = new Map();
+  for (const entry of sortedDiaries()) {
+    if (!grouped.has(entry.date)) grouped.set(entry.date, []);
+    grouped.get(entry.date).push(entry);
+  }
+  return [...grouped.entries()].map(([date, entries]) => ({
+    date,
+    entries,
+    excerpt: entries.map((entry) => entry.text || "").filter(Boolean).join(" / ") || `${entries.length} 条附件记事`,
+    updatedAt: entries[0]?.updatedAt || entries[0]?.createdAt || ""
+  })).sort((a, b) => b.date.localeCompare(a.date));
+}
+
+function filteredDiaryDays() {
+  return diaryDays().filter((item) => {
+    if (state.allDiaryYear && !item.date.startsWith(`${state.allDiaryYear}-`)) return false;
+    if (state.allDiaryMonth && item.date.slice(5, 7) !== state.allDiaryMonth) return false;
+    return true;
+  });
+}
+
+function syncAllDiaryFilters() {
+  const years = [...new Set(diaryDays().map((item) => item.date.slice(0, 4)))].sort((a, b) => b.localeCompare(a));
+  const currentYear = elements.allDiaryYear.value;
+  elements.allDiaryYear.replaceChildren(new Option("全部年份", ""));
+  for (const year of years) {
+    elements.allDiaryYear.append(new Option(`${year}年`, year));
+  }
+  elements.allDiaryYear.value = years.includes(state.allDiaryYear) ? state.allDiaryYear : (years.includes(currentYear) ? currentYear : "");
+  state.allDiaryYear = elements.allDiaryYear.value;
+
+  const currentMonth = elements.allDiaryMonth.value;
+  elements.allDiaryMonth.replaceChildren(new Option("全部月份", ""));
+  for (let month = 1; month <= 12; month += 1) {
+    const value = pad(month);
+    elements.allDiaryMonth.append(new Option(`${month}月`, value));
+  }
+  elements.allDiaryMonth.value = state.allDiaryMonth || currentMonth || "";
+  state.allDiaryMonth = elements.allDiaryMonth.value;
+}
+
+function openDiaryEntry(entry) {
+  const entryDate = new Date(`${entry.date}T00:00:00`);
+  setDiaryDate(entryDate);
+  state.diaryMode = "day";
+  state.editingDiaryId = entry.id;
+  state.editingAttachments = [...(entry.attachments || [])];
+  setDiaryEditorContent(entry);
+  renderDiary();
+}
+
+function showAllDiaries() {
+  state.diaryMode = "all";
+  renderDiary();
+}
+
+function showDayDiaries() {
+  state.diaryMode = "day";
+  renderDiary();
+  elements.diaryEditor.focus();
+}
+
+function renderPage() {
+  const isTurning = state.pageTransition === "to-diary" || state.pageTransition === "to-calendar";
+  elements.topbar.hidden = state.page !== "calendar" && !isTurning;
+  elements.calendarLayout.hidden = state.page !== "calendar" && !isTurning;
+  elements.diaryPage.hidden = state.page !== "diary";
+  elements.diaryFloatButton.hidden = state.page !== "calendar";
+  document.body.classList.toggle("is-diary-page", state.page === "diary" || isTurning);
+  document.body.classList.toggle("is-turning-to-diary", state.pageTransition === "to-diary");
+  document.body.classList.toggle("is-turning-to-calendar", state.pageTransition === "to-calendar");
+}
+
+function renderDiarySettings() {
+  elements.diaryFilesPath.value = state.settings.diaryFilesPath || "";
+  elements.chooseDiaryPath.disabled = typeof window.calendarBridge?.chooseDiaryDirectory !== "function";
+  elements.addDiaryFiles.disabled = typeof window.calendarBridge?.importDiaryFiles !== "function";
+}
+
+function renderDiaryAttachmentList() {
+  elements.diaryAttachmentList.replaceChildren();
+  if (!state.editingAttachments.length) {
+    const empty = document.createElement("li");
+    empty.className = "diary-empty";
+    empty.textContent = "还没有上传图片或文件";
+    elements.diaryAttachmentList.append(empty);
+    return;
+  }
+
+  for (const [index, attachment] of state.editingAttachments.entries()) {
+    const li = document.createElement("li");
+    const preview = createDiaryAttachmentPreview(attachment);
+    const info = document.createElement("span");
+    const name = document.createElement("strong");
+    name.textContent = attachment.name || "附件";
+    const path = document.createElement("small");
+    path.textContent = attachment.path || "";
+    info.append(name, path);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "diary-file-remove";
+    remove.setAttribute("aria-label", `移除附件 ${attachment.name || ""}`.trim());
+    remove.textContent = "×";
+    remove.addEventListener("click", () => removeDiaryAttachment(index));
+    li.append(preview, info, remove);
+    elements.diaryAttachmentList.append(li);
+  }
+}
+
+function attachmentFileUrl(attachment) {
+  if (attachment.url) return attachment.url;
+  if (!attachment.path) return "";
+  return `file:///${String(attachment.path).replace(/\\/g, "/").replace(/^([A-Za-z]):/, "$1:")}`;
+}
+
+function attachmentType(attachment) {
+  if (attachment.type && attachment.type !== "application/octet-stream") return attachment.type;
+  const name = `${attachment.name || attachment.path || ""}`.toLowerCase();
+  if (/\.(jpg|jpeg|png|gif|webp|bmp|avif)$/.test(name)) return "image/*";
+  if (/\.(mp4|webm|ogg|ogv|mov|m4v)$/.test(name)) return "video/*";
+  return attachment.type || "";
+}
+
+function createDiaryAttachmentPreview(attachment) {
+  const url = attachmentFileUrl(attachment);
+  const type = attachmentType(attachment);
+  const preview = document.createElement("span");
+  preview.className = "diary-file-preview";
+
+  if (url && type.startsWith("image/")) {
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = attachment.name || "日记图片";
+    image.loading = "lazy";
+    preview.classList.add("is-media");
+    preview.append(image);
+    return preview;
+  }
+
+  if (url && type.startsWith("video/")) {
+    const video = document.createElement("video");
+    video.src = url;
+    video.controls = true;
+    video.preload = "metadata";
+    preview.classList.add("is-video");
+    preview.append(video);
+    return preview;
+  }
+
+  preview.textContent = type.startsWith("video/") ? "视" : "文";
+  return preview;
+}
+
+function removeDiaryAttachment(index) {
+  state.editingAttachments = state.editingAttachments.filter((_, currentIndex) => currentIndex !== index);
+  const selected = currentDiaryEntry();
+  if (selected) {
+    selected.attachments = [...state.editingAttachments];
+    selected.updatedAt = new Date().toISOString();
+    saveDiaries();
+    renderDiary();
+    return;
+  }
+  renderDiaryAttachmentList();
+}
+
+function renderDiary() {
+  const entries = diariesForDate(state.diaryDate);
+  const selected = currentDiaryEntry();
+  elements.diaryEditor.parentElement.hidden = state.diaryMode !== "day";
+  elements.diaryAllPanel.hidden = state.diaryMode !== "all";
+  elements.diaryDate.value = dateKey(state.diaryDate);
+  elements.diaryDateLabel.textContent = diaryDateLabel(state.diaryDate);
+  elements.diaryEntryList.replaceChildren();
+
+  if (!entries.length) {
+    const empty = document.createElement("li");
+    empty.className = "diary-empty";
+    empty.textContent = "还没有记录日记";
+    elements.diaryEntryList.append(empty);
+  } else {
+    for (const entry of entries) {
+      const item = document.createElement("li");
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = entry.id === state.editingDiaryId ? "is-active" : "";
+      button.innerHTML = `<strong></strong><small></small>`;
+      button.querySelector("strong").textContent = diaryEntryTitle(entry);
+      button.querySelector("small").textContent = `${entry.date} · ${diaryEntryMeta(entry)}`;
+      button.addEventListener("click", () => openDiaryEntry(entry));
+      item.append(button);
+      elements.diaryEntryList.append(item);
+    }
+  }
+
+  elements.diaryEditorTitle.textContent = selected ? "编辑日记" : "新日记";
+  elements.diaryEditorMeta.textContent = selected ? diaryEntryMeta(selected) : "可以为同一天记录多段";
+  if (selected && document.activeElement !== elements.diaryEditor) {
+    setDiaryEditorContent(selected);
+  }
+  if (!selected && !state.editingDiaryId && document.activeElement !== elements.diaryEditor) {
+    elements.diaryEditor.innerHTML = elements.diaryEditor.innerHTML || "";
+  }
+  elements.deleteDiaryEntry.disabled = !selected;
+  renderDiaryAttachmentList();
+  renderDiarySettings();
+  renderAllDiaries();
+}
+
+function renderAllDiaries() {
+  syncAllDiaryFilters();
+  const days = filteredDiaryDays();
+  const dayKeys = new Set(days.map((item) => item.date));
+  state.selectedDiaryIds = new Set([...state.selectedDiaryIds].filter((date) => dayKeys.has(date)));
+  const selectedCount = state.selectedDiaryIds.size;
+  const pageCount = Math.max(1, Math.ceil(days.length / state.allDiaryPageSize));
+  state.allDiaryPage = Math.min(Math.max(1, state.allDiaryPage), pageCount);
+  const pageStart = (state.allDiaryPage - 1) * state.allDiaryPageSize;
+  const pageDays = days.slice(pageStart, pageStart + state.allDiaryPageSize);
+  elements.allDiaryMeta.textContent = days.length ? `共 ${days.length} 天有记录 · 按日期排序` : "还没有记录";
+  elements.selectedDiaryCount.textContent = `已选 ${selectedCount} 天`;
+  elements.selectAllDiaries.checked = days.length > 0 && selectedCount === days.length;
+  elements.selectAllDiaries.indeterminate = selectedCount > 0 && selectedCount < days.length;
+  elements.deleteSelectedDiaries.disabled = selectedCount === 0;
+  elements.diaryPageInfo.textContent = `第 ${state.allDiaryPage} / ${pageCount} 页`;
+  elements.prevDiaryPage.disabled = state.allDiaryPage <= 1;
+  elements.nextDiaryPage.disabled = state.allDiaryPage >= pageCount;
+  elements.diaryAllList.replaceChildren();
+
+  if (!days.length) {
+    const empty = document.createElement("li");
+    empty.className = "diary-empty";
+    empty.textContent = "还没有记录日记";
+    elements.diaryAllList.append(empty);
+    return;
+  }
+
+  for (const day of pageDays) {
+    const item = document.createElement("li");
+    item.className = state.selectedDiaryIds.has(day.date) ? "is-selected" : "";
+    const selectWrap = document.createElement("label");
+    selectWrap.className = "diary-all-select";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = state.selectedDiaryIds.has(day.date);
+    checkbox.setAttribute("aria-label", `选中 ${day.date}`);
+    checkbox.addEventListener("change", () => {
+      if (checkbox.checked) {
+        state.selectedDiaryIds.add(day.date);
+      } else {
+        state.selectedDiaryIds.delete(day.date);
+      }
+      renderAllDiaries();
+    });
+    selectWrap.append(checkbox);
+
+    const content = document.createElement("button");
+    content.type = "button";
+    content.innerHTML = `
+      <span></span>
+      <small></small>
+    `;
+    content.querySelector("span").textContent = day.excerpt.slice(0, 58);
+    content.querySelector("small").textContent = `${day.date} · ${day.entries.length} 条`;
+    content.addEventListener("click", () => openDiaryEntry(day.entries[0]));
+
+    item.append(selectWrap, content);
+    elements.diaryAllList.append(item);
+  }
+}
+
+function deleteSelectedDiaryDays() {
+  if (!state.selectedDiaryIds.size) return;
+  state.diaries = state.diaries.filter((entry) => !state.selectedDiaryIds.has(entry.date));
+  state.selectedDiaryIds.clear();
+  saveDiaries();
+  if (!currentDiaryEntry()) {
+    state.editingDiaryId = "";
+    state.editingAttachments = [];
+    elements.diaryEditor.innerHTML = "";
+  }
+  closeDeleteSelectedDiaryDialog();
+  render();
+}
+
+function saveDiaryEntry() {
+  const text = getDiaryEditorText();
+  const content = getDiaryEditorContent();
+  if (!text && !state.editingAttachments.length) return;
+
+  const now = new Date().toISOString();
+  const selected = currentDiaryEntry();
+  if (selected) {
+    selected.text = text;
+    selected.content = content;
+    selected.attachments = [...state.editingAttachments];
+    selected.updatedAt = now;
+  } else {
+    const entry = {
+      id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      date: dateKey(state.diaryDate),
+      text,
+      content,
+      attachments: [...state.editingAttachments],
+      createdAt: now,
+      updatedAt: now
+    };
+    state.diaries.push(entry);
+    state.editingDiaryId = entry.id;
+  }
+  saveDiaries();
+  render();
+}
+
+function deleteDiaryEntry() {
+  const selected = currentDiaryEntry();
+  if (!selected) return;
+  state.diaries = state.diaries.filter((entry) => entry.id !== selected.id);
+  state.editingDiaryId = "";
+  state.editingAttachments = [];
+  elements.diaryEditor.innerHTML = "";
+  saveDiaries();
+  render();
+}
+
+function openClearDiaryDialog() {
+  if (!state.diaries.length) return;
+  elements.clearDiaryDialog.hidden = false;
+  elements.cancelClearDiaries.focus();
+}
+
+function closeClearDiaryDialog() {
+  elements.clearDiaryDialog.hidden = true;
+}
+
+function openDeleteSelectedDiaryDialog() {
+  if (!state.selectedDiaryIds.size) return;
+  elements.deleteSelectedDiaryMessage.textContent = `确定删除选中的 ${state.selectedDiaryIds.size} 天日记记录吗？本地图片和文件不会删除。`;
+  elements.deleteSelectedDiaryDialog.hidden = false;
+  elements.cancelDeleteSelectedDiaries.focus();
+}
+
+function closeDeleteSelectedDiaryDialog() {
+  elements.deleteSelectedDiaryDialog.hidden = true;
+}
+
+function clearDiaries() {
+  state.diaries = [];
+  state.editingDiaryId = "";
+  state.editingAttachments = [];
+  elements.diaryEditor.innerHTML = "";
+  saveDiaries();
+  closeClearDiaryDialog();
+  render();
+  beginNewDiaryEntry();
+}
+
 function getReminderTime(todo) {
   return todo.time || DEFAULT_REMINDER_TIME;
 }
@@ -1165,6 +1685,7 @@ async function scheduleNativeReminders() {
 }
 
 function render() {
+  renderPage();
   renderCalendar();
   renderDetails();
   renderMonthEvents();
@@ -1172,6 +1693,7 @@ function render() {
   renderTodos();
   renderAnniversaries();
   renderHistory();
+  renderDiary();
   applyComponentSettings();
 }
 
@@ -1180,6 +1702,8 @@ document.querySelector("#nextMonth").addEventListener("click", () => setView(sta
 document.querySelector("#prevYear").addEventListener("click", () => setView(state.view.getFullYear() - 1, state.view.getMonth()));
 document.querySelector("#nextYear").addEventListener("click", () => setView(state.view.getFullYear() + 1, state.view.getMonth()));
 document.querySelector("#todayButton").addEventListener("click", () => selectDate(new Date()));
+elements.diaryFloatButton.addEventListener("click", () => openDiaryPage(state.selected));
+elements.backToCalendar.addEventListener("click", openCalendarPage);
 elements.yearInput.addEventListener("change", () => setView(Number(elements.yearInput.value), state.view.getMonth()));
 elements.monthSelect.addEventListener("change", () => setView(state.view.getFullYear(), Number(elements.monthSelect.value)));
 elements.todoText.addEventListener("pointerdown", () => {
@@ -1190,6 +1714,14 @@ elements.settingsButton.addEventListener("click", () => {
 });
 elements.settingsClose.addEventListener("click", () => {
   elements.settingsPopover.hidden = true;
+});
+elements.chooseDiaryPath.addEventListener("click", async () => {
+  if (typeof window.calendarBridge?.chooseDiaryDirectory !== "function") return;
+  const result = await window.calendarBridge.chooseDiaryDirectory(state.settings.diaryFilesPath || "");
+  if (!result?.path) return;
+  state.settings.diaryFilesPath = result.path;
+  saveSettings();
+  renderDiarySettings();
 });
 for (const button of elements.settingsPageButtons) {
   button.addEventListener("click", () => {
@@ -1260,6 +1792,90 @@ elements.todoForm.addEventListener("submit", async (event) => {
 });
 elements.reminderToastClose.addEventListener("click", () => {
   elements.reminderToast.hidden = true;
+});
+
+elements.diaryDate.addEventListener("change", () => {
+  const date = new Date(`${elements.diaryDate.value || dateKey(new Date())}T00:00:00`);
+  setDiaryDate(date);
+  state.diaryMode = "day";
+  const entries = diariesForDate(state.diaryDate);
+  state.editingDiaryId = entries[0]?.id || "";
+  state.editingAttachments = state.editingDiaryId ? [...(entries[0].attachments || [])] : [];
+  if (state.editingDiaryId) {
+    setDiaryEditorContent(entries[0]);
+  } else {
+    elements.diaryEditor.innerHTML = "";
+  }
+  render();
+});
+elements.diaryAllButton.addEventListener("click", showAllDiaries);
+elements.backToDayDiary.addEventListener("click", showDayDiaries);
+elements.selectAllDiaries.addEventListener("change", () => {
+  if (elements.selectAllDiaries.checked) {
+    state.selectedDiaryIds = new Set(filteredDiaryDays().map((item) => item.date));
+  } else {
+    state.selectedDiaryIds.clear();
+  }
+  renderAllDiaries();
+});
+elements.allDiaryYear.addEventListener("change", () => {
+  state.allDiaryYear = elements.allDiaryYear.value;
+  state.allDiaryPage = 1;
+  state.selectedDiaryIds.clear();
+  renderAllDiaries();
+});
+elements.allDiaryMonth.addEventListener("change", () => {
+  state.allDiaryMonth = elements.allDiaryMonth.value;
+  state.allDiaryPage = 1;
+  state.selectedDiaryIds.clear();
+  renderAllDiaries();
+});
+elements.prevDiaryPage.addEventListener("click", () => {
+  state.allDiaryPage = Math.max(1, state.allDiaryPage - 1);
+  renderAllDiaries();
+});
+elements.nextDiaryPage.addEventListener("click", () => {
+  state.allDiaryPage += 1;
+  renderAllDiaries();
+});
+elements.deleteSelectedDiaries.addEventListener("click", openDeleteSelectedDiaryDialog);
+elements.newDiaryEntry.addEventListener("click", beginNewDiaryEntry);
+elements.saveDiaryEntry.addEventListener("click", saveDiaryEntry);
+elements.deleteDiaryEntry.addEventListener("click", deleteDiaryEntry);
+elements.clearDiaries.addEventListener("click", openClearDiaryDialog);
+elements.cancelClearDiaries.addEventListener("click", closeClearDiaryDialog);
+elements.confirmClearDiaries.addEventListener("click", clearDiaries);
+elements.clearDiaryDialog.addEventListener("click", (event) => {
+  if (event.target === elements.clearDiaryDialog) closeClearDiaryDialog();
+});
+elements.cancelDeleteSelectedDiaries.addEventListener("click", closeDeleteSelectedDiaryDialog);
+elements.confirmDeleteSelectedDiaries.addEventListener("click", deleteSelectedDiaryDays);
+elements.deleteSelectedDiaryDialog.addEventListener("click", (event) => {
+  if (event.target === elements.deleteSelectedDiaryDialog) closeDeleteSelectedDiaryDialog();
+});
+for (const button of elements.diaryCommandButtons) {
+  button.addEventListener("click", () => {
+    elements.diaryEditor.focus();
+    document.execCommand(button.dataset.diaryCommand, false, null);
+  });
+}
+elements.diaryFontSize.addEventListener("change", () => {
+  if (!elements.diaryFontSize.value) return;
+  elements.diaryEditor.focus();
+  document.execCommand("fontSize", false, elements.diaryFontSize.value);
+  elements.diaryFontSize.value = "";
+});
+elements.addDiaryFiles.addEventListener("click", async () => {
+  if (typeof window.calendarBridge?.importDiaryFiles !== "function") return;
+  const result = await window.calendarBridge.importDiaryFiles(state.settings.diaryFilesPath || "");
+  if (!result?.files?.length) return;
+  if (result.directory && result.directory !== state.settings.diaryFilesPath) {
+    state.settings.diaryFilesPath = result.directory;
+    saveSettings();
+  }
+  state.editingAttachments = [...state.editingAttachments, ...result.files];
+  renderDiaryAttachmentList();
+  renderDiarySettings();
 });
 
 function selectedAnniversaryType() {
