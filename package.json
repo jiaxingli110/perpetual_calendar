@@ -29,7 +29,7 @@
       "electron/**/*"
     ],
     "win": {
-      "icon": "icons/icon-512.png",
+      "icon": "icons/icon.ico",
       "signAndEditExecutable": false,
       "target": [
         "nsis",
@@ -37,6 +37,9 @@
       ]
     },
     "nsis": {
+      "include": "build/installer.nsh",
+      "installerIcon": "icons/icon.ico",
+      "uninstallerIcon": "icons/icon.ico",
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,

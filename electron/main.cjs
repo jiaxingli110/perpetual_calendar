@@ -18,7 +18,7 @@ function createWindow() {
     autoHideMenuBar: true,
     title: "万年历",
     backgroundColor: "#f6f1e9",
-    icon: path.join(__dirname, "..", "icons", "icon-512.png"),
+    icon: path.join(__dirname, "..", "icons", "icon.ico"),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
