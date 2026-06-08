@@ -1169,6 +1169,11 @@ function openDiaryPage(date = new Date()) {
   const entries = diariesForDate(state.diaryDate);
   state.editingDiaryId = entries[0]?.id || "";
   state.editingAttachments = state.editingDiaryId ? [...(entries[0].attachments || [])] : [];
+  if (state.editingDiaryId) {
+    setDiaryEditorContent(entries[0]);
+  } else {
+    elements.diaryEditor.innerHTML = "";
+  }
   render();
   window.setTimeout(() => {
     state.pageTransition = "";
