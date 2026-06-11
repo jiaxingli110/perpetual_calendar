@@ -38,6 +38,8 @@
         data-date="{{item.key}}"
         bindtap="selectDate"
       >
+        <image wx:if="{{item.termImage}}" class="day-background" src="{{item.termImage}}" mode="aspectFill" />
+        <view wx:if="{{item.termImage}}" class="day-shade"></view>
         <text class="solar-day">{{item.day}}</text>
         <text class="lunar-day">{{item.badge}}</text>
         <text wx:if="{{item.mark}}" class="day-mark">{{item.mark}}</text>

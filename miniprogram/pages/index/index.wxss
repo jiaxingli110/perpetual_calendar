@@ -38,6 +38,7 @@
 .section-title button,
 .todo-item button,
 .event-item button {
+  width: auto;
   min-height: 72rpx;
   padding: 0 24rpx;
   border: 1rpx solid #d8c7ad;
@@ -45,6 +46,12 @@
   color: #20242a;
   font-size: 26rpx;
   font-weight: 800;
+}
+
+.gear {
+  flex: 0 0 144rpx;
+  width: 144rpx;
+  min-width: 144rpx;
 }
 
 .month-card,
@@ -62,19 +69,23 @@
 }
 
 .month-head {
-  display: grid;
-  grid-template-columns: 72rpx 1fr 72rpx;
+  display: flex;
   align-items: center;
-  gap: 16rpx;
+  justify-content: space-between;
 }
 
 .nav-button {
+  flex: 0 0 72rpx;
+  width: 72rpx;
   min-width: 72rpx;
   padding: 0;
   font-size: 42rpx;
 }
 
 .month-title {
+  flex: 1;
+  min-width: 0;
+  padding: 0 16rpx;
   text-align: center;
 }
 
@@ -94,10 +105,37 @@
 }
 
 .controls {
-  display: grid;
-  grid-template-columns: 1fr 1.2fr 1fr 1fr;
-  gap: 12rpx;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
   margin: 22rpx 0;
+}
+
+.controls > button,
+.controls > picker {
+  flex: 1;
+  min-width: 0;
+  margin-right: 12rpx;
+}
+
+.controls > picker {
+  flex-grow: 1.2;
+}
+
+.controls > button:last-child {
+  margin-right: 0;
+}
+
+.control-button,
+.picker-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 72rpx;
+  padding: 0 10rpx;
+  line-height: 1;
+  text-align: center;
 }
 
 .primary {
@@ -108,9 +146,9 @@
 
 .weekday-grid,
 .calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 8rpx;
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
 }
 
 .weekday-grid {
@@ -121,9 +159,16 @@
   text-align: center;
 }
 
+.weekday-grid text {
+  flex: 0 0 14.285714%;
+  width: 14.285714%;
+}
+
 .day-cell {
   position: relative;
   display: flex;
+  flex: 0 0 14.285714%;
+  width: 14.285714%;
   min-width: 0;
   min-height: 104rpx;
   flex-direction: column;
@@ -131,10 +176,47 @@
   justify-content: flex-start;
   padding: 12rpx 10rpx;
   border: 1rpx solid #eadfce;
-  border-radius: 12rpx;
+  border-radius: 8rpx;
   background: #fffaf1;
   color: #20242a;
   text-align: left;
+}
+
+.day-background,
+.day-shade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+
+.day-background {
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.day-shade {
+  z-index: 1;
+  background: rgba(255, 250, 241, 0.56);
+}
+
+.day-cell.muted .day-shade {
+  background: rgba(255, 253, 248, 0.72);
+}
+
+.day-cell.today .day-shade {
+  background: rgba(255, 250, 241, 0.48);
+}
+
+.day-cell.selected .day-shade {
+  background: rgba(23, 111, 118, 0.74);
+}
+
+.day-cell > text {
+  position: relative;
+  z-index: 2;
 }
 
 .day-cell.muted {
@@ -250,19 +332,25 @@
 }
 
 .almanac {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12rpx;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
   margin-top: 20rpx;
 }
 
 .almanac text {
+  flex: 1;
   min-width: 0;
+  margin-right: 12rpx;
   padding: 14rpx;
   border-radius: 12rpx;
   background: rgba(255, 255, 255, 0.74);
   color: #3f4854;
   font-size: 23rpx;
+}
+
+.almanac text:last-child {
+  margin-right: 0;
 }
 
 .info-section {
@@ -304,14 +392,19 @@
 }
 
 .recommend-grid {
-  display: grid;
-  gap: 12rpx;
+  display: flex;
+  flex-direction: column;
 }
 
 .recommend-item {
+  margin-bottom: 12rpx;
   padding: 18rpx;
   border-radius: 12rpx;
   background: #f6efe4;
+}
+
+.recommend-item:last-child {
+  margin-bottom: 0;
 }
 
 .recommend-item text {
@@ -325,17 +418,24 @@
 }
 
 .form-line {
-  display: grid;
-  grid-template-columns: 1fr 132rpx;
-  gap: 12rpx;
+  display: flex;
+  align-items: stretch;
 }
 
 .form-line input {
+  flex: 1;
+  min-width: 0;
+  margin-right: 12rpx;
   min-height: 72rpx;
   padding: 0 20rpx;
   border: 1rpx solid #d8c7ad;
   border-radius: 10rpx;
   background: #fffdf8;
+}
+
+.form-line button {
+  flex: 0 0 132rpx;
+  width: 132rpx;
 }
 
 .empty {

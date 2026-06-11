@@ -36,6 +36,20 @@ const solarTerms = [
   "小寒", "大寒", "立春", "雨水", "惊蛰", "春分", "清明", "谷雨", "立夏", "小满", "芒种", "夏至",
   "小暑", "大暑", "立秋", "处暑", "白露", "秋分", "寒露", "霜降", "立冬", "小雪", "大雪", "冬至"
 ];
+const solarTermImages = [
+  "/assets/solar-terms/xiaohan.jpg", "/assets/solar-terms/dahan.jpg",
+  "/assets/solar-terms/lichun.jpg", "/assets/solar-terms/yushui.jpg",
+  "/assets/solar-terms/jingzhe.jpg", "/assets/solar-terms/chunfen.jpg",
+  "/assets/solar-terms/qingming.jpg", "/assets/solar-terms/guyu.jpg",
+  "/assets/solar-terms/lixia.jpg", "/assets/solar-terms/xiaoman.jpg",
+  "/assets/solar-terms/mangzhong.jpg", "/assets/solar-terms/xiazhi.jpg",
+  "/assets/solar-terms/xiaoshu.jpg", "/assets/solar-terms/dashu.jpg",
+  "/assets/solar-terms/liqiu.jpg", "/assets/solar-terms/chushu.jpg",
+  "/assets/solar-terms/bailu.jpg", "/assets/solar-terms/qiufen.jpg",
+  "/assets/solar-terms/hanlu.jpg", "/assets/solar-terms/shuangjiang.jpg",
+  "/assets/solar-terms/lidong.jpg", "/assets/solar-terms/xiaoxue.jpg",
+  "/assets/solar-terms/daxue.jpg", "/assets/solar-terms/dongzhi.jpg"
+];
 const termInfo = [
   0, 21208, 42467, 63836, 85337, 107014, 128867, 150921, 173149, 195551, 218072, 240693,
   263343, 285989, 308563, 331033, 353350, 375494, 397447, 419210, 440795, 462224, 483532, 504758
@@ -255,6 +269,7 @@ function buildCalendarDays(view, selectedKey) {
       day: date.getDate(),
       badge: festivals[0] || term || (lunar.day === 1 ? lunarMonthName(lunar) : lunarDayName(lunar)),
       mark: festivals.length > 1 ? festivals.slice(1).join(" ") : "",
+      termImage: term ? solarTermImages[solarTerms.indexOf(term)] : "",
       isCurrentMonth: date.getMonth() === month,
       isToday: key === todayKey,
       isSelected: key === selectedKey,
