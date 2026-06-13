@@ -1,0 +1,49 @@
+<view class="manager-page">
+  <view class="editor-card">
+    <view class="card-heading">
+      <view>
+        <text class="eyebrow">Todo Reminder</text>
+        <text class="page-title">{{editingId ? '编辑待办' : '新建待办'}}</text>
+      </view>
+      <text class="hint">仅在打开小程序时提醒</text>
+    </view>
+
+    <view class="field">
+      <text>待办内容</text>
+      <input value="{{text}}" maxlength="80" placeholder="例如：缴纳水电费" bindinput="onTextInput" />
+    </view>
+    <view class="field-row">
+      <view class="field compact">
+        <text>日期</text>
+        <picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="picker-value">{{date}}</view></picker>
+      </view>
+      <view class="field compact">
+        <text>时间</text>
+        <picker mode="time" value="{{time}}" bindchange="onTimeChange"><view class="picker-value">{{time}}</view></picker>
+      </view>
+    </view>
+    <view class="switch-line"><text>应用内到期提醒</text><switch checked="{{reminder}}" color="#176f76" bindchange="onReminderChange" /></view>
+    <view class="editor-actions">
+      <button wx:if="{{editingId}}" class="secondary" bindtap="cancelEdit">取消</button>
+      <button class="primary" bindtap="saveTodo">{{editingId ? '保存修改' : '添加待办'}}</button>
+    </view>
+  </view>
+
+  <view class="list-card">
+    <view class="filter-bar">
+      <button wx:for="{{filters}}" wx:key="key" class="filter-button {{filter === item.key ? 'active' : ''}}" data-filter="{{item.key}}" bindtap="selectFilter">{{item.label}}</button>
+    </view>
+    <view wx:if="{{!visibleTodos.length}}" class="empty">当前分类暂无待办</view>
+    <view wx:for="{{visibleTodos}}" wx:key="id" class="todo-card {{item.done ? 'done' : ''}}">
+      <button class="check-button" data-id="{{item.id}}" bindtap="toggleTodo">{{item.done ? '✓' : ''}}</button>
+      <view class="todo-main">
+        <text class="todo-title">{{item.text}}</text>
+        <text class="todo-meta">{{item.date}} {{item.time}} · {{item.reminder ? '提醒开启' : '无提醒'}}</text>
+      </view>
+      <view class="item-actions">
+        <button data-id="{{item.id}}" bindtap="editTodo">编辑</button>
+        <button class="danger" data-id="{{item.id}}" bindtap="deleteTodo">删除</button>
+      </view>
+    </view>
+  </view>
+</view>

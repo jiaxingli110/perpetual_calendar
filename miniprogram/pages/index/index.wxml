@@ -4,7 +4,7 @@
       <text class="eyebrow">Lunar Calendar</text>
       <text class="title">万年历</text>
     </view>
-    <button class="gear" bindtap="toggleSettings" aria-label="设置">设置</button>
+    <button class="gear" bindtap="toggleSettings" aria-label="设置">⚙</button>
   </view>
 
   <view class="month-card">
@@ -27,14 +27,14 @@
     </view>
 
     <view class="weekday-grid">
-      <text wx:for="{{weekdays}}" wx:key="*this">{{item}}</text>
+      <text wx:for="{{weekdays}}" wx:key="*this" class="{{index >= 5 ? 'weekend' : ''}}">{{item}}</text>
     </view>
 
     <view class="calendar-grid">
       <button
         wx:for="{{calendarDays}}"
         wx:key="key"
-        class="day-cell {{item.isCurrentMonth ? '' : 'muted'}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}} {{item.isHoliday ? 'holiday' : ''}}"
+        class="day-cell {{item.isCurrentMonth ? '' : 'muted'}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}} {{item.isWeekend ? 'weekend' : ''}} {{item.isHoliday ? 'holiday' : ''}} {{item.isWorkday ? 'workday' : ''}}"
         data-date="{{item.key}}"
         bindtap="selectDate"
       >
@@ -43,6 +43,12 @@
         <text class="solar-day">{{item.day}}</text>
         <text class="lunar-day">{{item.badge}}</text>
         <text wx:if="{{item.mark}}" class="day-mark">{{item.mark}}</text>
+        <text wx:if="{{item.holidayLabel}}" class="holiday-status">{{item.holidayLabel}}</text>
+        <view wx:if="{{item.todoCount || item.anniversaryCount || item.diaryCount}}" class="day-indicators">
+          <text wx:if="{{item.todoCount}}" class="todo-indicator">待</text>
+          <text wx:if="{{item.anniversaryCount}}" class="anniversary-indicator">纪</text>
+          <text wx:if="{{item.diaryCount}}" class="diary-indicator">记</text>
+        </view>
       </button>
     </view>
   </view>
@@ -79,9 +85,9 @@
 
     <view wx:if="{{components.events}}" class="info-section">
       <text class="section-heading">本月节日</text>
-      <view wx:for="{{monthEvents}}" wx:key="key" class="event-item">
-        <text>{{item.day}}</text>
-        <text>{{item.name}}</text>
+      <view wx:for="{{monthEvents}}" wx:key="key" class="event-item {{item.type}}">
+        <text class="event-day">{{item.day}}</text>
+        <view class="event-main"><text>{{item.name}}</text><text class="event-status">{{item.status}}</text></view>
       </view>
     </view>
 
@@ -96,29 +102,38 @@
     </view>
 
     <view wx:if="{{components.todos}}" class="info-section">
-      <text class="section-heading">待办</text>
-      <view class="form-line">
-        <input placeholder="添加待办" value="{{todoText}}" bindinput="onTodoInput" />
-        <button bindtap="addTodo">添加</button>
+      <view class="summary-heading">
+        <view><text class="section-heading">待办提醒</text><text class="summary-count">{{todos.length}} 项</text></view>
+        <button bindtap="openTodos">管理待办</button>
       </view>
-      <view wx:if="{{!todos.length}}" class="empty">今天还没有待办</view>
-      <view wx:for="{{todos}}" wx:key="id" class="todo-item">
-        <checkbox checked="{{item.done}}" data-id="{{item.id}}" bindtap="toggleTodo" />
-        <text class="{{item.done ? 'done' : ''}}">{{item.text}}</text>
-        <button data-id="{{item.id}}" bindtap="removeTodo">删除</button>
+      <view wx:if="{{!todos.length}}" class="empty">选中日期暂无待办</view>
+      <view wx:for="{{todos}}" wx:key="id" class="summary-item {{item.done ? 'done' : ''}}">
+        <text class="summary-dot">{{item.done ? '✓' : '·'}}</text>
+        <view><text>{{item.text}}</text><text class="summary-meta">{{item.time}} · {{item.reminder ? '提醒开启' : '无提醒'}}</text></view>
       </view>
     </view>
 
     <view wx:if="{{components.anniversaries}}" class="info-section">
-      <text class="section-heading">纪念日</text>
-      <view class="form-line">
-        <input placeholder="纪念日名称" value="{{anniversaryName}}" bindinput="onAnniversaryInput" />
-        <button bindtap="addAnniversary">添加</button>
+      <view class="summary-heading">
+        <view><text class="section-heading">纪念日</text><text class="summary-count">{{anniversaries.length}} 项</text></view>
+        <button bindtap="openAnniversaries">管理纪念日</button>
       </view>
       <view wx:if="{{!anniversaries.length}}" class="empty">选中日期暂无纪念日</view>
-      <view wx:for="{{anniversaries}}" wx:key="id" class="event-item">
-        <text>{{item.name}}</text>
-        <button data-id="{{item.id}}" bindtap="removeAnniversary">删除</button>
+      <view wx:for="{{anniversaries}}" wx:key="id" class="summary-item anniversary-summary">
+        <text class="summary-dot">纪</text>
+        <view><text>{{item.name}}</text><text class="summary-meta">{{item.type === 'lunar' ? '农历' : '公历'}} · 每年重复</text></view>
+      </view>
+    </view>
+
+    <view wx:if="{{components.diaries}}" class="info-section">
+      <view class="summary-heading">
+        <view><text class="section-heading">日记</text><text class="summary-count">{{diaries.length}} 条</text></view>
+        <button bindtap="openDiaries">写日记</button>
+      </view>
+      <view wx:if="{{!diaries.length}}" class="empty">选中日期还没有日记</view>
+      <view wx:for="{{diaries}}" wx:key="id" class="summary-item diary-summary">
+        <text class="summary-dot">记</text>
+        <view><text>{{item.title || '无标题日记'}}</text><text class="summary-meta">{{item.content}}</text></view>
       </view>
     </view>
 

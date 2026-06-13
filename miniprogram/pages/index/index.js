@@ -1,3 +1,6 @@
+const storage = require("../../utils/storage");
+const { getHolidayPlan } = require("../../utils/holidays");
+
 const lunarInfo = [
   0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
   0x04ae0, 0x0a5b6, 0x0a4d0, 0x0d250, 0x1d255, 0x0b540, 0x0d6a0, 0x0ada2, 0x095b0, 0x14977,
@@ -84,18 +87,18 @@ const lunarFestivals = {
   "12-24": "南方小年"
 };
 const seasonalFood = {
-  1: [["水果", "砂糖橘、苹果、柚子"], ["蔬菜", "白菜、萝卜、花菜"], ["水产", "带鱼、牡蛎、鳕鱼"]],
-  2: [["水果", "草莓、橙子、苹果"], ["蔬菜", "春笋、菠菜、韭黄"], ["水产", "鲫鱼、蛤蜊、带鱼"]],
-  3: [["水果", "枇杷、菠萝、草莓"], ["蔬菜", "香椿、春笋、蚕豆"], ["水产", "蛏子、海螺、鲫鱼"]],
-  4: [["水果", "樱桃、枇杷、桑葚"], ["蔬菜", "芦笋、豌豆、茭白"], ["水产", "小黄鱼、皮皮虾、海虾"]],
-  5: [["水果", "杨梅、荔枝、甜瓜"], ["蔬菜", "番茄、黄瓜、豇豆"], ["水产", "花蛤、海虾、鲈鱼"]],
-  6: [["水果", "西瓜、桃子、蓝莓"], ["蔬菜", "茄子、冬瓜、苦瓜"], ["水产", "小龙虾、鳝鱼、海虾"]],
-  7: [["水果", "葡萄、桃子、哈密瓜"], ["蔬菜", "丝瓜、空心菜、毛豆"], ["水产", "鲍鱼、花蛤、带鱼"]],
-  8: [["水果", "梨、葡萄、无花果"], ["蔬菜", "莲藕、南瓜、芋头"], ["水产", "螃蟹、海虾、鲫鱼"]],
-  9: [["水果", "石榴、柿子、柚子"], ["蔬菜", "山药、莲藕、南瓜"], ["水产", "大闸蟹、黄鱼、带鱼"]],
-  10: [["水果", "柿子、苹果、橙子"], ["蔬菜", "板栗、萝卜、白菜"], ["水产", "牡蛎、海虾、黄鱼"]],
-  11: [["水果", "橙子、柚子、苹果"], ["蔬菜", "冬笋、菠菜、山药"], ["水产", "海参、扇贝、带鱼"]],
-  12: [["水果", "砂糖橘、柚子、苹果"], ["蔬菜", "萝卜、白菜、菜心"], ["水产", "鳕鱼、牡蛎、鲈鱼"]]
+  1: [["水果", "砂糖橘、苹果、柚子、梨、猕猴桃"], ["蔬菜", "白菜、萝卜、花菜、菠菜、冬笋"], ["水产", "带鱼、牡蛎、鳕鱼、鲈鱼、海参"]],
+  2: [["水果", "草莓、橙子、苹果、甘蔗、金桔"], ["蔬菜", "春笋、菠菜、韭黄、芹菜、荠菜"], ["水产", "鲫鱼、蛤蜊、带鱼、鲈鱼、牡蛎"]],
+  3: [["水果", "枇杷、菠萝、草莓、樱桃、桑葚"], ["蔬菜", "香椿、春笋、蚕豆、豌豆、莴笋"], ["水产", "蛏子、海螺、鲫鱼、河虾、鳜鱼"]],
+  4: [["水果", "樱桃、枇杷、桑葚、菠萝、青梅"], ["蔬菜", "芦笋、豌豆、茭白、蚕豆、蒜薹"], ["水产", "小黄鱼、皮皮虾、海虾、鲳鱼、蛏子"]],
+  5: [["水果", "杨梅、荔枝、甜瓜、樱桃、枇杷"], ["蔬菜", "番茄、黄瓜、豇豆、茄子、苦瓜"], ["水产", "花蛤、海虾、鲈鱼、小龙虾、黄鱼"]],
+  6: [["水果", "西瓜、桃子、蓝莓、杨梅、荔枝"], ["蔬菜", "茄子、冬瓜、苦瓜、丝瓜、豇豆"], ["水产", "小龙虾、鳝鱼、海虾、鲈鱼、花蛤"]],
+  7: [["水果", "葡萄、桃子、哈密瓜、西瓜、李子"], ["蔬菜", "丝瓜、空心菜、毛豆、冬瓜、莲藕"], ["水产", "鲍鱼、花蛤、带鱼、海虾、黄鳝"]],
+  8: [["水果", "梨、葡萄、无花果、石榴、龙眼"], ["蔬菜", "莲藕、南瓜、芋头、茭白、毛豆"], ["水产", "螃蟹、海虾、鲫鱼、鲍鱼、鲈鱼"]],
+  9: [["水果", "石榴、柿子、柚子、梨、葡萄"], ["蔬菜", "山药、莲藕、南瓜、芋头、萝卜"], ["水产", "大闸蟹、黄鱼、带鱼、海虾、鲈鱼"]],
+  10: [["水果", "柿子、苹果、橙子、柚子、猕猴桃"], ["蔬菜", "板栗、萝卜、白菜、山药、莲藕"], ["水产", "牡蛎、海虾、黄鱼、螃蟹、鲈鱼"]],
+  11: [["水果", "橙子、柚子、苹果、梨、冬枣"], ["蔬菜", "冬笋、菠菜、山药、白菜、萝卜"], ["水产", "海参、扇贝、带鱼、牡蛎、鳕鱼"]],
+  12: [["水果", "砂糖橘、柚子、苹果、梨、猕猴桃"], ["蔬菜", "萝卜、白菜、菜心、菠菜、冬笋"], ["水产", "鳕鱼、牡蛎、鲈鱼、带鱼、海参"]]
 };
 const historyToday = {
   "01-01": [["1863", "林肯签署《解放黑人奴隶宣言》正式生效。"], ["1999", "欧元作为电子货币正式启动。"]],
@@ -112,7 +115,8 @@ const defaultComponents = {
   events: true,
   recommendations: true,
   todos: true,
-  anniversaries: true
+  anniversaries: true,
+  diaries: true
 };
 
 function pad(value) {
@@ -231,11 +235,17 @@ function lunarFullName(lunar) {
 
 function getFestivals(date, lunar, term) {
   const items = [];
+  const holidayPlan = getHolidayPlan(dateKey(date));
   const solar = solarFestivals[monthKey(date.getMonth() + 1, date.getDate())];
   const lunarFestival = lunarFestivals[monthKey(lunar.month, lunar.day)];
-  if (solar) items.push(solar);
-  if (lunarFestival) items.push(lunarFestival);
-  if (term) items.push(term);
+  if (holidayPlan) items.push({
+    type: holidayPlan.type,
+    name: holidayPlan.type === "workday" ? `调休·${holidayPlan.name}` : `法定·${holidayPlan.name}`,
+    shortName: holidayPlan.type === "workday" ? "上班" : "休"
+  });
+  if (solar && (!holidayPlan || solar !== holidayPlan.name)) items.push({ type: "festival", name: solar, shortName: solar });
+  if (lunarFestival && (!holidayPlan || lunarFestival !== holidayPlan.name)) items.push({ type: "festival", name: lunarFestival, shortName: lunarFestival });
+  if (term) items.push({ type: "term", name: term, shortName: term });
   return items;
 }
 
@@ -249,7 +259,7 @@ function getAdvice(date) {
   };
 }
 
-function buildCalendarDays(view, selectedKey) {
+function buildCalendarDays(view, selectedKey, todos = [], anniversaries = [], diaries = []) {
   const year = view.getFullYear();
   const month = view.getMonth();
   const first = new Date(year, month, 1);
@@ -263,17 +273,27 @@ function buildCalendarDays(view, selectedKey) {
     const lunar = toLunar(date);
     const term = getSolarTerm(date);
     const festivals = getFestivals(date, lunar, term);
+    const calendarFestival = festivals.find((item) => item.type !== "holiday" && item.type !== "workday");
     const key = dateKey(date);
+    const dayTodos = todos.filter((todo) => todo.date === key && !todo.done);
+    const dayAnniversaries = anniversaries.filter((item) => storage.matchesAnniversary(item, date, lunar));
+    const dayDiaries = diaries.filter((item) => item.date === key);
     days.push({
       key,
       day: date.getDate(),
-      badge: festivals[0] || term || (lunar.day === 1 ? lunarMonthName(lunar) : lunarDayName(lunar)),
-      mark: festivals.length > 1 ? festivals.slice(1).join(" ") : "",
+      badge: calendarFestival?.shortName || term || (lunar.day === 1 ? lunarMonthName(lunar) : lunarDayName(lunar)),
+      mark: festivals.filter((item) => item !== calendarFestival && item.type !== "holiday" && item.type !== "workday").map((item) => item.shortName).join(" "),
       termImage: term ? solarTermImages[solarTerms.indexOf(term)] : "",
+      todoCount: dayTodos.length,
+      anniversaryCount: dayAnniversaries.length,
+      diaryCount: dayDiaries.length,
       isCurrentMonth: date.getMonth() === month,
+      isWeekend: date.getDay() === 0 || date.getDay() === 6,
       isToday: key === todayKey,
       isSelected: key === selectedKey,
-      isHoliday: Boolean(festivals.length)
+      isHoliday: festivals.some((item) => item.type === "holiday"),
+      isWorkday: festivals.some((item) => item.type === "workday"),
+      holidayLabel: festivals.find((item) => item.type === "holiday" || item.type === "workday")?.shortName || ""
     });
   }
 
@@ -291,7 +311,7 @@ function createSelected(date) {
     solar: `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`,
     lunar: lunarFullName(lunar),
     ganzhi: `${ganzhiYear(lunar.year)}年 ${ganzhiDay(date)}日`,
-    festivals: festivals.length ? festivals.join("、") : "无",
+    festivals: festivals.length ? festivals.map((item) => item.name).join("、") : "无",
     good: advice.good,
     bad: advice.bad
   };
@@ -307,8 +327,14 @@ function collectMonthEvents(view) {
     const lunar = toLunar(date);
     const term = getSolarTerm(date);
     const festivals = getFestivals(date, lunar, term);
-    for (const name of festivals) {
-      events.push({ key: `${day}-${name}`, day: `${month + 1}月${day}日`, name });
+    for (const item of festivals) {
+      events.push({
+        key: `${day}-${item.type}-${item.name}`,
+        day: `${month + 1}月${day}日`,
+        name: item.name,
+        type: item.type,
+        status: item.type === "holiday" ? "放假" : item.type === "workday" ? "上班" : "不放假"
+      });
     }
   }
   return events.slice(0, 12);
@@ -336,6 +362,7 @@ Page({
     todoText: "",
     anniversaries: [],
     anniversaryName: "",
+    diaries: [],
     components: defaultComponents,
     componentOptions: [],
     showSettings: false
@@ -350,14 +377,19 @@ Page({
       selectedKey: dateKey(today),
       components
     });
+  },
+
+  onShow() {
     this.refresh();
+    this.showDueTodos();
   },
 
   refresh() {
     const view = new Date(this.data.viewYear, this.data.viewMonth, 1);
     const selectedDate = parseDate(this.data.selectedKey);
-    const allTodos = wx.getStorageSync("calendarTodos") || [];
-    const allAnniversaries = wx.getStorageSync("calendarAnniversaries") || [];
+    const allTodos = storage.readTodos();
+    const allAnniversaries = storage.readAnniversaries();
+    const allDiaries = storage.readDiaries();
     const selectedMonthDay = monthKey(selectedDate.getMonth() + 1, selectedDate.getDate());
     const lunar = toLunar(selectedDate);
     const selectedLunarDay = monthKey(lunar.month, lunar.day);
@@ -367,7 +399,7 @@ Page({
       monthTitle: `${view.getFullYear()}年${view.getMonth() + 1}月`,
       monthMeta: `${ganzhiYear(view.getFullYear())}年 ${animals[(view.getFullYear() - 4) % 12]}年`,
       pickerValue: `${view.getFullYear()}-${pad(view.getMonth() + 1)}`,
-      calendarDays: buildCalendarDays(view, this.data.selectedKey),
+      calendarDays: buildCalendarDays(view, this.data.selectedKey, allTodos, allAnniversaries, allDiaries),
       selected: createSelected(selectedDate),
       monthEvents: collectMonthEvents(view),
       recommendations: foods.map(([title, items]) => ({ title, items })),
@@ -377,12 +409,14 @@ Page({
         const key = monthKey(item.month, item.day);
         return item.type === "lunar" ? key === selectedLunarDay : key === selectedMonthDay;
       }),
+      diaries: storage.sortDiaries(allDiaries.filter((item) => item.date === this.data.selectedKey)).slice(0, 3),
       componentOptions: [
         { key: "today", label: "今日信息", checked: this.data.components.today },
         { key: "events", label: "本月节日", checked: this.data.components.events },
         { key: "recommendations", label: "当季推荐", checked: this.data.components.recommendations },
         { key: "todos", label: "待办", checked: this.data.components.todos },
-        { key: "anniversaries", label: "纪念日", checked: this.data.components.anniversaries }
+        { key: "anniversaries", label: "纪念日", checked: this.data.components.anniversaries },
+        { key: "diaries", label: "日记", checked: this.data.components.diaries }
       ]
     });
   },
@@ -446,6 +480,37 @@ Page({
     wx.setStorageSync("calendarComponents", components);
     this.setData({ components });
     this.refresh();
+  },
+
+  openTodos() {
+    wx.navigateTo({ url: `/pages/todos/todos?date=${this.data.selectedKey}` });
+  },
+
+  openAnniversaries() {
+    wx.navigateTo({ url: `/pages/anniversaries/anniversaries?date=${this.data.selectedKey}` });
+  },
+
+  openDiaries() {
+    wx.navigateTo({ url: `/pages/diaries/diaries?date=${this.data.selectedKey}` });
+  },
+
+  showDueTodos() {
+    const app = getApp();
+    const remindedIds = new Set(app.globalData.remindedTodoIds || []);
+    const due = storage.readTodos().filter((todo) => storage.isTodoDue(todo) && !remindedIds.has(todo.id));
+    if (!due.length) return;
+    due.forEach((todo) => remindedIds.add(todo.id));
+    app.globalData.remindedTodoIds = [...remindedIds];
+    const preview = due.slice(0, 3).map((todo) => `${todo.time} ${todo.text}`).join("\n");
+    const suffix = due.length > 3 ? `\n还有 ${due.length - 3} 项` : "";
+    wx.showModal({
+      title: `有 ${due.length} 项待办已到期`,
+      content: `${preview}${suffix}`,
+      confirmText: "查看待办",
+      success: ({ confirm }) => {
+        if (confirm) this.openTodos();
+      }
+    });
   },
 
   onTodoInput(event) {

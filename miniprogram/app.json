@@ -1,6 +1,9 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/index/index",
+    "pages/todos/todos",
+    "pages/anniversaries/anniversaries",
+    "pages/diaries/diaries"
   ],
   "window": {
     "navigationBarTitleText": "万年历",

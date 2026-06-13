@@ -1,3 +1,6 @@
 App({
+  globalData: {
+    remindedTodoIds: []
+  },
   onLaunch() {}
 });

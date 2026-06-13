@@ -1,0 +1,53 @@
+<view class="manager-page">
+  <view class="editor-card">
+    <view class="card-heading">
+      <view>
+        <text class="eyebrow">Daily Journal</text>
+        <text class="page-title">{{editingId ? '编辑日记' : '写日记'}}</text>
+      </view>
+      <text class="hint">记录只保存在本机</text>
+    </view>
+
+    <view class="field compact-date">
+      <text>日期</text>
+      <picker mode="date" value="{{date}}" bindchange="onDateChange"><view class="picker-value">{{date}}</view></picker>
+    </view>
+    <view class="field">
+      <text>标题</text>
+      <input value="{{title}}" maxlength="40" placeholder="给今天起个标题" bindinput="onTitleInput" />
+    </view>
+    <view class="field">
+      <text>内容</text>
+      <textarea value="{{content}}" maxlength="4000" placeholder="写下今天发生的事……" bindinput="onContentInput" />
+    </view>
+    <view class="editor-actions">
+      <button wx:if="{{editingId}}" class="secondary" bindtap="cancelEdit">取消</button>
+      <button class="primary" bindtap="saveDiary">{{editingId ? '保存修改' : '保存日记'}}</button>
+    </view>
+  </view>
+
+  <view class="list-card">
+    <view class="list-heading">
+      <view><text class="list-title">全部日记</text><text class="result-count">{{visibleDiaries.length}} 条</text></view>
+      <button bindtap="clearFilters">重置筛选</button>
+    </view>
+    <view class="search-field"><input value="{{keyword}}" placeholder="搜索标题或内容" bindinput="onKeywordInput" /></view>
+    <view class="filter-row">
+      <picker class="filter-picker" mode="selector" range="{{years}}" range-key="label" value="{{yearIndex}}" bindchange="onYearChange"><view class="filter-value">{{years[yearIndex].label}}</view></picker>
+      <picker class="filter-picker" mode="selector" range="{{months}}" range-key="label" value="{{monthIndex}}" bindchange="onMonthChange"><view class="filter-value">{{months[monthIndex].label}}</view></picker>
+    </view>
+
+    <view wx:if="{{!visibleDiaries.length}}" class="empty">当前条件下还没有日记</view>
+    <view wx:for="{{visibleDiaries}}" wx:key="id" class="diary-card">
+      <view class="diary-main">
+        <text class="diary-date">{{item.date}}</text>
+        <text class="diary-title">{{item.title || '无标题日记'}}</text>
+        <text class="diary-excerpt">{{item.content}}</text>
+      </view>
+      <view class="item-actions">
+        <button data-id="{{item.id}}" bindtap="editDiary">编辑</button>
+        <button class="danger" data-id="{{item.id}}" bindtap="deleteDiary">删除</button>
+      </view>
+    </view>
+  </view>
+</view>

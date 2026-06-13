@@ -1,0 +1,35 @@
+.manager-page { padding: 24rpx; }
+.editor-card, .list-card { border: 1rpx solid rgba(206,188,161,.9); border-radius: 16rpx; background: rgba(255,253,248,.96); box-shadow: 0 18rpx 48rpx rgba(57,50,42,.1); padding: 24rpx; }
+.list-card { margin-top: 20rpx; }
+.card-heading { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 22rpx; }
+.card-heading > view:first-child { flex: 1; min-width: 0; }
+.eyebrow, .page-title, .hint, .field > text, .list-title, .item-name, .item-meta, .date-badge text { display: block; }
+.eyebrow { color: #176f76; font-size: 20rpx; font-weight: 900; }
+.page-title { margin-top: 4rpx; font-size: 38rpx; font-weight: 900; }
+.hint { color: #74808c; font-size: 20rpx; }
+.field { margin-top: 16rpx; }
+.field > text { margin-bottom: 8rpx; color: #3f4854; font-size: 22rpx; font-weight: 800; }
+.field input, .picker-value { min-height: 72rpx; border: 1rpx solid #d8c7ad; border-radius: 10rpx; background: #fffdf8; padding: 0 18rpx; font-size: 26rpx; }
+.picker-value { display: flex; align-items: center; }
+.type-tabs, .editor-actions, .item-actions { display: flex; gap: 12rpx; }
+.type-tabs { margin-top: 20rpx; }
+.type-tabs button { flex: 1; min-height: 66rpx; border: 1rpx solid #d8c7ad; background: #fffdf8; font-size: 24rpx; font-weight: 900; }
+.type-tabs button.active { border-color: #176f76; background: rgba(23,111,118,.12); color: #176f76; }
+.preview { margin-top: 16rpx; border-radius: 10rpx; background: #f6efe4; color: #176f76; padding: 16rpx; text-align: center; font-size: 25rpx; font-weight: 900; }
+.editor-actions { width: 100%; justify-content: flex-end; margin-top: 18rpx; }
+.editor-actions button:first-child { margin-left: auto; }
+.editor-actions button { min-height: 68rpx; padding: 0 28rpx; border: 1rpx solid #d8c7ad; background: #fffdf8; font-size: 24rpx; font-weight: 900; }
+.editor-actions .primary { border-color: #176f76; background: #176f76; color: white; }
+.list-title { margin-bottom: 10rpx; font-size: 30rpx; font-weight: 900; }
+.anniversary-card { display: flex; align-items: center; gap: 14rpx; padding: 18rpx 0; border-top: 1rpx solid #eadfce; }
+.date-badge { flex: 0 0 66rpx; width: 66rpx; border-radius: 10rpx; background: rgba(201,70,53,.1); color: #c94635; padding: 8rpx 0; text-align: center; }
+.date-badge text:first-child { font-size: 19rpx; }
+.date-badge text:last-child { font-size: 28rpx; font-weight: 900; }
+.item-main { flex: 1; min-width: 0; }
+.item-name { font-size: 27rpx; font-weight: 900; }
+.item-meta { margin-top: 5rpx; color: #74808c; font-size: 20rpx; }
+.anniversary-card .item-actions { width: auto; margin-left: auto; }
+.item-actions button:first-child { margin-left: auto; }
+.item-actions button { min-height: 56rpx; padding: 0 16rpx; border: 1rpx solid #d8c7ad; background: #fffdf8; font-size: 21rpx; font-weight: 800; }
+.item-actions .danger { color: #c94635; }
+.empty { padding: 46rpx 0; color: #74808c; text-align: center; font-size: 24rpx; }

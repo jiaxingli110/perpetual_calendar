@@ -1,0 +1,29 @@
+<view class="manager-page">
+  <view class="editor-card">
+    <view class="card-heading">
+      <view><text class="eyebrow">Anniversary</text><text class="page-title">{{editingId ? '编辑纪念日' : '新建纪念日'}}</text></view>
+      <text class="hint">每年重复</text>
+    </view>
+    <view class="field"><text>名称</text><input value="{{name}}" maxlength="40" placeholder="例如：结婚纪念日" bindinput="onNameInput" /></view>
+    <view class="type-tabs">
+      <button class="{{type === 'solar' ? 'active' : ''}}" data-type="solar" bindtap="selectType">公历</button>
+      <button class="{{type === 'lunar' ? 'active' : ''}}" data-type="lunar" bindtap="selectType">农历</button>
+    </view>
+    <view class="field"><text>选择对应日期</text><picker mode="date" value="{{sourceDate}}" start="1901-01-01" end="2100-12-31" bindchange="onDateChange"><view class="picker-value">{{sourceDate}}</view></picker></view>
+    <view class="preview">{{preview}}</view>
+    <view class="editor-actions">
+      <button wx:if="{{editingId}}" class="secondary" bindtap="cancelEdit">取消</button>
+      <button class="primary" bindtap="saveAnniversary">{{editingId ? '保存修改' : '添加纪念日'}}</button>
+    </view>
+  </view>
+
+  <view class="list-card">
+    <text class="list-title">全部纪念日</text>
+    <view wx:if="{{!anniversaries.length}}" class="empty">还没有纪念日</view>
+    <view wx:for="{{anniversaries}}" wx:key="id" class="anniversary-card">
+      <view class="date-badge"><text>{{item.month}}</text><text>{{item.day}}</text></view>
+      <view class="item-main"><text class="item-name">{{item.name}}</text><text class="item-meta">{{item.type === 'lunar' ? '农历' : '公历'}} · 每年重复</text></view>
+      <view class="item-actions"><button data-id="{{item.id}}" bindtap="editAnniversary">编辑</button><button class="danger" data-id="{{item.id}}" bindtap="deleteAnniversary">删除</button></view>
+    </view>
+  </view>
+</view>
