@@ -52,6 +52,7 @@ if (!/item\.isWeekend \? 'weekend' : ''/.test(pageWxml) || !/isWeekend:\s*date\.
 requireRule(pageWxss, ".topbar > view:first-child", /flex:\s*1/, "The topbar title must fill remaining space and push settings right");
 requireRule(pageWxss, ".summary-heading button", /margin-left:\s*auto/, "Summary action buttons must explicitly anchor to the right edge");
 requireRule(pageWxss, ".summary-heading > view:first-child", /flex:\s*1/, "Summary titles must fill remaining space and push actions right");
+requireRule(pageWxss, ".section-title button", /margin-left:\s*auto/, "The settings close button must explicitly anchor to the right edge");
 requireRule(pageWxss, ".history-item text:last-child", /text-align:\s*left/, "History descriptions must remain left aligned");
 
 const seasonalFoodBlock = pageJs.match(/const seasonalFood = \{([\s\S]*?)\n\};/);

@@ -374,6 +374,15 @@
   font-weight: 900;
 }
 
+.section-title > text:first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.section-title button {
+  margin-left: auto;
+}
+
 .switch-row {
   padding: 16rpx 0;
   border-top: 1rpx solid #eadfce;
