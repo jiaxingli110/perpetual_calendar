@@ -41,7 +41,8 @@
         <image wx:if="{{item.termImage}}" class="day-background" src="{{item.termImage}}" mode="aspectFill" />
         <view wx:if="{{item.termImage}}" class="day-shade"></view>
         <text class="solar-day">{{item.day}}</text>
-        <text class="lunar-day">{{item.badge}}</text>
+        <text wx:if="{{item.festivalText}}" class="festival-names">{{item.festivalText}}</text>
+        <text wx:else class="lunar-day">{{item.badge}}</text>
         <text wx:if="{{item.mark}}" class="day-mark">{{item.mark}}</text>
         <text wx:if="{{item.holidayLabel}}" class="holiday-status">{{item.holidayLabel}}</text>
         <view wx:if="{{item.todoCount || item.anniversaryCount || item.diaryCount}}" class="day-indicators">

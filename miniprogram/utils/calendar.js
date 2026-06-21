@@ -90,4 +90,48 @@ function lunarLabel(lunar) {
   return `${lunar.isLeap ? "闰" : ""}${lunarMonthLabels[lunar.month - 1]}${lunarDayLabels[lunar.day - 1]}`;
 }
 
-module.exports = { dateKey, parseDate, pad, toLunar, lunarLabel };
+function isNthWeekday(date, month, weekday, occurrence) {
+  if (date.getMonth() + 1 !== month || date.getDay() !== weekday) return false;
+  return Math.floor((date.getDate() - 1) / 7) + 1 === occurrence;
+}
+
+function getVariableSolarFestivals(date) {
+  const names = [];
+  if (isNthWeekday(date, 5, 0, 2)) names.push("母亲节");
+  if (isNthWeekday(date, 6, 0, 3)) names.push("父亲节");
+  if (isNthWeekday(date, 11, 4, 4)) names.push("感恩节");
+  return names;
+}
+
+function compactHolidayName(name) {
+  const compactNames = {
+    "春节": "春节",
+    "清明节": "清明",
+    "劳动节": "劳动节",
+    "端午节": "端午",
+    "中秋节": "中秋",
+    "国庆节": "国庆"
+  };
+  return compactNames[name] || name;
+}
+
+function combineFestivalNames(date, options = {}) {
+  const names = [
+    options.holidayName ? compactHolidayName(options.holidayName) : "",
+    options.solarName || "",
+    options.lunarName || "",
+    options.term || "",
+    ...getVariableSolarFestivals(date)
+  ].filter(Boolean);
+  return [...new Set(names)];
+}
+
+module.exports = {
+  dateKey,
+  parseDate,
+  pad,
+  toLunar,
+  lunarLabel,
+  getVariableSolarFestivals,
+  combineFestivalNames
+};

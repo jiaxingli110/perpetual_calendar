@@ -1,5 +1,6 @@
 const storage = require("../../utils/storage");
 const { getHolidayPlan } = require("../../utils/holidays");
+const { combineFestivalNames, getVariableSolarFestivals } = require("../../utils/calendar");
 
 const lunarInfo = [
   0x04bd8, 0x04ae0, 0x0a570, 0x054d5, 0x0d260, 0x0d950, 0x16554, 0x056a0, 0x09ad0, 0x055d2,
@@ -246,7 +247,20 @@ function getFestivals(date, lunar, term) {
   if (solar && (!holidayPlan || solar !== holidayPlan.name)) items.push({ type: "festival", name: solar, shortName: solar });
   if (lunarFestival && (!holidayPlan || lunarFestival !== holidayPlan.name)) items.push({ type: "festival", name: lunarFestival, shortName: lunarFestival });
   if (term) items.push({ type: "term", name: term, shortName: term });
+  for (const name of getVariableSolarFestivals(date)) {
+    items.push({ type: "festival", name, shortName: name });
+  }
   return items;
+}
+
+function getCalendarFestivalNames(date, lunar, term) {
+  const holidayPlan = getHolidayPlan(dateKey(date));
+  return combineFestivalNames(date, {
+    holidayName: holidayPlan?.type === "holiday" ? holidayPlan.name : "",
+    solarName: solarFestivals[monthKey(date.getMonth() + 1, date.getDate())],
+    lunarName: lunarFestivals[monthKey(lunar.month, lunar.day)],
+    term
+  });
 }
 
 function getAdvice(date) {
@@ -273,7 +287,7 @@ function buildCalendarDays(view, selectedKey, todos = [], anniversaries = [], di
     const lunar = toLunar(date);
     const term = getSolarTerm(date);
     const festivals = getFestivals(date, lunar, term);
-    const calendarFestival = festivals.find((item) => item.type !== "holiday" && item.type !== "workday");
+    const calendarFestivalNames = getCalendarFestivalNames(date, lunar, term);
     const key = dateKey(date);
     const dayTodos = todos.filter((todo) => todo.date === key && !todo.done);
     const dayAnniversaries = anniversaries.filter((item) => storage.matchesAnniversary(item, date, lunar));
@@ -281,8 +295,9 @@ function buildCalendarDays(view, selectedKey, todos = [], anniversaries = [], di
     days.push({
       key,
       day: date.getDate(),
-      badge: calendarFestival?.shortName || term || (lunar.day === 1 ? lunarMonthName(lunar) : lunarDayName(lunar)),
-      mark: festivals.filter((item) => item !== calendarFestival && item.type !== "holiday" && item.type !== "workday").map((item) => item.shortName).join(" "),
+      badge: lunar.day === 1 ? lunarMonthName(lunar) : lunarDayName(lunar),
+      festivalText: calendarFestivalNames.join("、"),
+      mark: "",
       termImage: term ? solarTermImages[solarTerms.indexOf(term)] : "",
       todoCount: dayTodos.length,
       anniversaryCount: dayAnniversaries.length,

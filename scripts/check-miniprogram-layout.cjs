@@ -49,6 +49,10 @@ if (!/class="\{\{index >= 5 \? 'weekend' : ''\}\}"/.test(pageWxml)) {
 if (!/item\.isWeekend \? 'weekend' : ''/.test(pageWxml) || !/isWeekend:\s*date\.getDay\(\) === 0 \|\| date\.getDay\(\) === 6/.test(pageJs)) {
   throw new Error("Calendar dates must expose and render their weekend state");
 }
+if (!/class="festival-names"/.test(pageWxml) || !/\{\{item\.festivalText\}\}/.test(pageWxml)) {
+  throw new Error("Calendar cells must render all festival names for a date");
+}
+requireRule(pageWxss, ".festival-names", /white-space:\s*normal/, "Multiple festival names must wrap inside calendar cells");
 requireRule(pageWxss, ".topbar > view:first-child", /flex:\s*1/, "The topbar title must fill remaining space and push settings right");
 requireRule(pageWxss, ".summary-heading button", /margin-left:\s*auto/, "Summary action buttons must explicitly anchor to the right edge");
 requireRule(pageWxss, ".summary-heading > view:first-child", /flex:\s*1/, "Summary titles must fill remaining space and push actions right");

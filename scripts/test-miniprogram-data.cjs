@@ -109,4 +109,16 @@ test("classifies 2026 statutory holidays and adjusted workdays", () => {
   assert.equal(holidays.getHolidayPlan("2026-06-12"), null);
 });
 
+test("recognizes variable-date family festivals", () => {
+  assert.deepEqual(calendar.getVariableSolarFestivals(new Date(2026, 5, 21)), ["父亲节"]);
+  assert.deepEqual(calendar.getVariableSolarFestivals(new Date(2026, 4, 10)), ["母亲节"]);
+});
+
+test("combines every calendar label for the same date", () => {
+  assert.deepEqual(calendar.combineFestivalNames(new Date(2026, 5, 21), {
+    holidayName: "端午节",
+    term: "夏至"
+  }), ["端午", "夏至", "父亲节"]);
+});
+
 console.log("Mini program data tests passed.");
