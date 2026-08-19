@@ -6,7 +6,9 @@ const pageWxss = fs.readFileSync(path.join(root, "miniprogram/pages/index/index.
 const appWxss = fs.readFileSync(path.join(root, "miniprogram/app.wxss"), "utf8");
 const pageWxml = fs.readFileSync(path.join(root, "miniprogram/pages/index/index.wxml"), "utf8");
 const pageJs = fs.readFileSync(path.join(root, "miniprogram/pages/index/index.js"), "utf8");
+const miniAppJs = fs.readFileSync(path.join(root, "miniprogram/app.js"), "utf8");
 const appJson = JSON.parse(fs.readFileSync(path.join(root, "miniprogram/app.json"), "utf8"));
+const remoteHolidayData = JSON.parse(fs.readFileSync(path.join(root, "miniprogram/data/holidays.json"), "utf8"));
 
 function selectorBlock(source, selector) {
   const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -135,6 +137,16 @@ for (const token of ["holiday-status", "workday", "event-status", "放假", "上
 
 for (const selector of [".day-cell.holiday", ".day-cell.workday", ".holiday-status", ".event-item.holiday", ".event-item.workday"]) {
   selectorBlock(pageWxss, selector);
+}
+
+for (const token of ["loadCachedHolidayData", "loadRemoteHolidayData", "updateHolidayData"]) {
+  if (!pageJs.includes(token)) throw new Error(`Missing remote holiday update token: ${token}`);
+}
+if (!/holidayDataUrl:\s*"https:\/\/raw\.githubusercontent\.com\/jiaxingli110\/perpetual_calendar\/main\/miniprogram\/data\/holidays\.json"/.test(miniAppJs)) {
+  throw new Error("Mini program must point at the remote holiday JSON data source");
+}
+if (!remoteHolidayData.plans?.["2025"] || !remoteHolidayData.plans?.["2026"]) {
+  throw new Error("Remote holiday JSON must include the built-in fallback years");
 }
 
 console.log("Mini program layout compatibility checks passed.");

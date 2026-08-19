@@ -106,7 +106,44 @@ test("classifies 2026 statutory holidays and adjusted workdays", () => {
   assert.deepEqual(holidays.getHolidayPlan("2026-06-19"), { type: "holiday", name: "端午节" });
   assert.deepEqual(holidays.getHolidayPlan("2026-06-21"), { type: "holiday", name: "端午节" });
   assert.deepEqual(holidays.getHolidayPlan("2026-05-09"), { type: "workday", name: "劳动节调休" });
+  assert.deepEqual(holidays.getHolidayPlan("2026-10-01"), { type: "holiday", name: "国庆节" });
+  assert.deepEqual(holidays.getHolidayPlan("2026-10-07"), { type: "holiday", name: "国庆节" });
+  assert.deepEqual(holidays.getHolidayPlan("2026-10-10"), { type: "workday", name: "国庆节调休" });
   assert.equal(holidays.getHolidayPlan("2026-06-12"), null);
+});
+
+test("classifies 2025 National Day and Mid-Autumn merged holidays", () => {
+  const holidays = require("../miniprogram/utils/holidays");
+  assert.deepEqual(holidays.getHolidayPlan("2025-09-28"), { type: "workday", name: "国庆中秋调休" });
+  assert.deepEqual(holidays.getHolidayPlan("2025-10-01"), { type: "holiday", name: "国庆中秋" });
+  assert.deepEqual(holidays.getHolidayPlan("2025-10-08"), { type: "holiday", name: "国庆中秋" });
+  assert.deepEqual(holidays.getHolidayPlan("2025-10-11"), { type: "workday", name: "国庆中秋调休" });
+});
+
+test("merges remote holiday data without losing built-in fallback years", () => {
+  const holidays = require("../miniprogram/utils/holidays");
+  holidays.resetHolidayPlansForTest();
+  assert.equal(holidays.getHolidayPlan("2028-10-01"), null);
+  const applied = holidays.applyHolidayData({
+    plans: {
+      2028: {
+        holidays: { "2028-10-01": "国庆节" },
+        workdays: { "2028-09-30": "国庆节调休" }
+      }
+    }
+  });
+  assert.equal(applied, true);
+  assert.deepEqual(holidays.getHolidayPlan("2028-10-01"), { type: "holiday", name: "国庆节" });
+  assert.deepEqual(holidays.getHolidayPlan("2028-09-30"), { type: "workday", name: "国庆节调休" });
+  assert.deepEqual(holidays.getHolidayPlan("2026-10-01"), { type: "holiday", name: "国庆节" });
+  holidays.resetHolidayPlansForTest();
+});
+
+test("ignores malformed remote holiday data", () => {
+  const holidays = require("../miniprogram/utils/holidays");
+  holidays.resetHolidayPlansForTest();
+  assert.equal(holidays.applyHolidayData({ plans: { 2028: { holidays: { "2028-10-01": 1 } } } }), false);
+  assert.equal(holidays.getHolidayPlan("2028-10-01"), null);
 });
 
 test("recognizes variable-date family festivals", () => {

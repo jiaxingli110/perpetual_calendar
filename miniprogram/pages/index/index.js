@@ -1,5 +1,5 @@
 const storage = require("../../utils/storage");
-const { getHolidayPlan } = require("../../utils/holidays");
+const { getHolidayPlan, loadCachedHolidayData, loadRemoteHolidayData } = require("../../utils/holidays");
 const { combineFestivalNames, getVariableSolarFestivals } = require("../../utils/calendar");
 
 const lunarInfo = [
@@ -385,6 +385,7 @@ Page({
 
   onLoad() {
     const today = new Date();
+    loadCachedHolidayData(wx);
     const components = normalizeComponents(wx.getStorageSync("calendarComponents"));
     this.setData({
       viewYear: today.getFullYear(),
@@ -392,6 +393,7 @@ Page({
       selectedKey: dateKey(today),
       components
     });
+    this.updateHolidayData();
   },
 
   onShow() {
@@ -433,6 +435,17 @@ Page({
         { key: "anniversaries", label: "纪念日", checked: this.data.components.anniversaries },
         { key: "diaries", label: "日记", checked: this.data.components.diaries }
       ]
+    });
+  },
+
+  updateHolidayData() {
+    const app = getApp();
+    loadRemoteHolidayData({
+      url: app.globalData.holidayDataUrl,
+      request: wx.request,
+      storage: wx
+    }).then((updated) => {
+      if (updated) this.refresh();
     });
   },
 
